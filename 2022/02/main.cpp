@@ -14,12 +14,26 @@ static std::string winState[] = {
 		"Win "
 };
 
+/**
+ * Calculates score of your play vs their play
+ * @param yourPlay Your play (0 for Rock, 1 for Paper, 2 for Scissors)
+ * @param theirPlay Their play (0 for Rock, 1 for Paper, 2 for Scissors)
+ * @return The score you get given the plays
+ */
 int countEarnings(int yourPlay, int theirPlay) {
+	// +4 is actually +1 but needs to result in a positive result because c++
 	int win = (yourPlay + 4 - theirPlay) % 3;
 	return win * 3 + yourPlay + 1;
 }
 
+/**
+ * Determines what you should play to get the desired outcome
+ * @param theirPlay Their play (0 for Rock, 1 for Paper, 2 for Scissors)
+ * @param desiredOutcome Desired Outcome (0 for Lose, 1 for Draw, 2 for Win)
+ * @return The play you should do for the desired outcome (0 for Rock, 1 for Paper, 2 for Scissors)
+ */
 int determinePlay(int theirPlay, int desiredOutcome) {
+	// +2 is actually -1 but needs to result in a positive result because c++
 	return (theirPlay + desiredOutcome + 2) % 3;
 }
 
