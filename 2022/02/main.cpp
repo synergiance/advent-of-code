@@ -20,8 +20,7 @@ int countEarnings(int yourPlay, int theirPlay) {
 }
 
 int determinePlay(int theirPlay, int desiredOutcome) {
-	int play = (theirPlay + desiredOutcome + 2) % 3;
-	return play;
+	return (theirPlay + desiredOutcome + 2) % 3;
 }
 
 int main() {
