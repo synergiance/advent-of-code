@@ -3,26 +3,24 @@
 #include <string>
 
 static std::string rpsNames[] = {
-		"Rock",
-		"Paper",
+		"Rock    ",
+		"Paper   ",
 		"Scissors"
 };
 
 static std::string winState[] = {
 		"Lose",
 		"Draw",
-		"Win"
+		"Win "
 };
 
 int countEarnings(int yourPlay, int theirPlay) {
-	int win = (yourPlay + 1 - theirPlay) % 3;
-	if (win < 0) win += 3;
+	int win = (yourPlay + 4 - theirPlay) % 3;
 	return win * 3 + yourPlay + 1;
 }
 
 int determinePlay(int theirPlay, int desiredOutcome) {
-	int play = (theirPlay + desiredOutcome - 1) % 3;
-	if (play < 0) play += 3;
+	int play = (theirPlay + desiredOutcome + 2) % 3;
 	return play;
 }
 
@@ -51,8 +49,8 @@ int main() {
 		int yourPlay = determinePlay(theirPlay, desiredOutcome);
 		int yourEarnings = countEarnings(yourPlay, theirPlay);
 
-		std::cout<<"Their play: "<<rpsNames[theirPlay]<<", Desired outcome: "<<winState[desiredOutcome]
-		<<", Your play: "<<rpsNames[yourPlay]<<", Your earnings: "<<yourEarnings<<std::endl;
+		std::cout<<"Their play: "<<rpsNames[theirPlay]<<"   Desired outcome: "<<winState[desiredOutcome]
+		<<"     Your play: "<<rpsNames[yourPlay]<<"   Your earnings: "<<yourEarnings<<std::endl;
 
 		totalScore += yourEarnings;
 	}
