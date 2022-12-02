@@ -1,0 +1,1 @@
+add_executable(2022-02-rock_paper_scissors main.cpp)
