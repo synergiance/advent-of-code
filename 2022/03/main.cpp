@@ -32,7 +32,7 @@ int main() {
 		if (buffer.empty()) continue;
 
 		if (buffer.size() % 2 != 0) {
-			std::cerr<<"Rupsack Contents Discrepency!"<<std::endl;
+			std::cerr<<"Rupsack Contents Discrepancy!"<<std::endl;
 		}
 
 		int halfBufferSz = buffer.size() / 2;
