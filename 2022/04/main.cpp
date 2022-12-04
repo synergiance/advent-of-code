@@ -48,14 +48,6 @@ int main() {
 		if (buffer.empty()) continue;
 
 		size_t commaPos = buffer.find(',');
-		size_t firstDashPos = buffer.find_first_of('-');
-		size_t secondDashPos = buffer.find_last_of('-');
-
-		if (commaPos == std::string::npos || firstDashPos == std::string::npos ||
-				firstDashPos == secondDashPos || firstDashPos >= commaPos || secondDashPos <= commaPos) {
-			std::cerr<<"Error with string: "<<buffer<<std::endl;
-			continue;
-		}
 
 		size_t range1Begin = 0;
 		size_t range2Begin = commaPos + 1;
