@@ -1,1 +1,1 @@
-add_executable(2022-04-unknown main.cpp)
+add_executable(2022-04-cleanup_assignments main.cpp)
