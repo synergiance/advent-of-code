@@ -1,0 +1,1 @@
+add_executable(2022-04-unknown main.cpp)
