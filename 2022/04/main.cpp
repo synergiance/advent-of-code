@@ -13,7 +13,19 @@ int main() {
 	std::cout<<"File successfully opened!"<<std::endl;
 	std::string buffer;
 
-	// Code
+	// TODO: Pre loop code
+
+	while (std::getline(iFile, buffer)) {
+		int bufferLength = buffer.size();
+		if (bufferLength > 0 && buffer[bufferLength - 1] == '\r')
+			buffer.erase(bufferLength - 1);
+
+		if (buffer.empty()) continue;
+
+		// TODO: Inner loop code
+	}
+
+	// TODO: Post loop code
 
 	iFile.close();
 	return 0;
