@@ -101,10 +101,8 @@ int main() {
 	}
 
 	std::string outputStr;
-	for (auto &cargoStack : cargoStacks) {
+	for (auto &cargoStack : cargoStacks)
 		outputStr += cargoStack.empty() ? ' ' : cargoStack.back();
-	}
-
 	std::cout<<"Stack tops: "<<outputStr<<std::endl;
 
 	iFile.close();
