@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <Parser.h>
+#include <Reader.h>
 
 using namespace Syn;
 
@@ -66,11 +67,7 @@ int main() {
 
 	std::vector<std::string> cargoBuffer;
 
-	while (std::getline(iFile, buffer)) {
-		size_t bufferLength = buffer.size();
-		if (bufferLength > 0 && buffer[bufferLength - 1] == '\r')
-			buffer.erase(bufferLength - 1);
-
+	while (Reader::getline(iFile, buffer)) {
 		if (buffer.empty()) break;
 
 		cargoBuffer.push_back(buffer);
@@ -79,11 +76,7 @@ int main() {
 	std::vector<std::vector<char>> cargoStacks;
 	DecodeStacks(cargoBuffer, cargoStacks);
 
-	while (std::getline(iFile, buffer)) {
-		size_t bufferLength = buffer.size();
-		if (bufferLength > 0 && buffer[bufferLength - 1] == '\r')
-			buffer.erase(bufferLength - 1);
-
+	while (Reader::getline(iFile, buffer)) {
 		if (buffer.empty()) continue;
 
 		ApplyMove(DecodeMove(buffer), cargoStacks);

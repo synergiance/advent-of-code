@@ -2,8 +2,7 @@
 // Created by Synergiance on 12/5/22.
 //
 
-#ifndef ADVENTOFCODE_PARSER_H
-#define ADVENTOFCODE_PARSER_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -14,5 +13,3 @@ namespace Syn {
 		static void Tokenize(const std::string &input, std::vector<std::string> &tokens, char delimiter = ' ');
 	};
 } // Syn
-
-#endif //ADVENTOFCODE_PARSER_H
