@@ -2,26 +2,15 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <Parser.h>
+
+using namespace Syn;
 
 struct MoveOperation {
 	int beginStack;
 	int endStack;
 	int numToMove;
 };
-
-void GetTokens(const std::string& str, char delimeter, std::vector<std::string> &tokens) {
-	for (int i = 0; i < str.length(); i++) {
-		int begin = i;
-		i = str.find(delimeter, i);
-		if (i == std::string::npos) i = str.size();
-		tokens.push_back(str.substr(begin, i - begin));
-	}
-}
-
-bool IsAlphaNumeric(char chr) {
-	return (chr >= 'A' && chr <= 'Z')
-	    || (chr >= 'a' && chr <= 'z');
-}
 
 void DecodeStacks(std::vector<std::string> &stackBuffer, std::vector<std::vector<char>> &stacks) {
 	int numStacks = (int)stackBuffer[stackBuffer.size() - 1].size() / 4 + 1;
@@ -34,7 +23,7 @@ void DecodeStacks(std::vector<std::string> &stackBuffer, std::vector<std::vector
 			if (pos >= stackBuffer[j].size()) break;
 			char cargo = stackBuffer[j][pos];
 
-			if (!IsAlphaNumeric(cargo)) break;
+			if (!isalpha(cargo)) break;
 
 			stacks[i].push_back(cargo);
 		}
@@ -44,7 +33,7 @@ void DecodeStacks(std::vector<std::string> &stackBuffer, std::vector<std::vector
 MoveOperation DecodeMove(const std::string& moveStr) {
 	MoveOperation moveOperation{};
 	std::vector<std::string> tokens;
-	GetTokens(moveStr, ' ', tokens);
+	Parser::Tokenize(moveStr, tokens);
 	moveOperation.numToMove = atoi(tokens[1].c_str());
 	moveOperation.beginStack = atoi(tokens[3].c_str()) - 1;
 	moveOperation.endStack = atoi(tokens[5].c_str()) - 1;
