@@ -26,8 +26,8 @@ int main() {
 		header[charsRead % headerSz] = c;
 		bool duplicate = false;
 
-		for (int i = 1; i < headerSz; i++)
-			for (int j = 0; j < i; j++)
+		for (int i = 1; i < headerSz && !duplicate; i++)
+			for (int j = 0; j < i && !duplicate; j++)
 				duplicate |= header[i] == header[j];
 
 		charsRead++;
