@@ -19,4 +19,13 @@ namespace Syn {
 	std::istream &Reader::getline(std::istream &is, std::string &str, char delim) {
 		return std::getline(is, str, delim);
 	}
+
+	std::istream &Reader::ReadUntilEmptyLn(std::istream &is, std::vector<std::string> &lines) {
+		std::string buffer;
+		while (getline(is, buffer)) {
+			if (buffer.empty()) break;
+			lines.push_back(buffer);
+		}
+		return is;
+	}
 } // Syn

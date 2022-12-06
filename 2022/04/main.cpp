@@ -1,6 +1,10 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <Parser.h>
+#include <Reader.h>
+
+using namespace Syn;
 
 struct Bounds {
 	int low;
@@ -18,12 +22,12 @@ bool checkPartiallyContained(Bounds &obj1, Bounds &obj2) {
 }
 
 Bounds getBounds(const std::string& range) {
-	size_t dashPos = range.find('-');
-	size_t begin2 = dashPos + 1;
+	std::vector<std::string> numStrings;
+	Parser::Tokenize(range, numStrings, '-');
 
 	Bounds bounds{};
-	bounds.low = atoi(range.substr(0, dashPos).c_str());
-	bounds.high = atoi(range.substr(begin2, range.size() - begin2).c_str());
+	bounds.low = atoi(numStrings[0].c_str());
+	bounds.high = atoi(numStrings[1].c_str());
 	return bounds;
 }
 
@@ -40,25 +44,20 @@ int main() {
 	int numFullyContainedAssignments = 0;
 	int numPartiallyContainedAssignments = 0;
 
-	while (std::getline(iFile, buffer)) {
-		size_t bufferLength = buffer.size();
-		if (bufferLength > 0 && buffer[bufferLength - 1] == '\r')
-			buffer.erase(bufferLength - 1);
-
+	while (Reader::getline(iFile, buffer)) {
 		if (buffer.empty()) continue;
 
-		size_t commaPos = buffer.find(',');
+		std::vector<std::string> rangeStrings;
+		Parser::Tokenize(buffer, rangeStrings, ',');
 
-		size_t range1Begin = 0;
-		size_t range2Begin = commaPos + 1;
+		std::vector<Bounds> rangeBounds;
+		for (const auto& rangeString : rangeStrings)
+			rangeBounds.push_back(getBounds(rangeString));
 
-		Bounds range1Bounds = getBounds(buffer.substr(range1Begin, commaPos));
-		Bounds range2Bounds = getBounds(buffer.substr(range2Begin, buffer.length() - range2Begin));
-
-		if (checkFullyContained(range1Bounds, range2Bounds)) {
+		if (checkFullyContained(rangeBounds[0], rangeBounds[1])) {
 			numFullyContainedAssignments++;
 			numPartiallyContainedAssignments++;
-		} else if (checkPartiallyContained(range1Bounds, range2Bounds)) {
+		} else if (checkPartiallyContained(rangeBounds[0], rangeBounds[1])) {
 			numPartiallyContainedAssignments++;
 		}
 	}

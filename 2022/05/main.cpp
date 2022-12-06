@@ -66,12 +66,7 @@ int main() {
 	std::string buffer;
 
 	std::vector<std::string> cargoBuffer;
-
-	while (Reader::getline(iFile, buffer)) {
-		if (buffer.empty()) break;
-
-		cargoBuffer.push_back(buffer);
-	}
+	Reader::ReadUntilEmptyLn(iFile, cargoBuffer);
 
 	std::vector<std::vector<char>> cargoStacks;
 	DecodeStacks(cargoBuffer, cargoStacks);
