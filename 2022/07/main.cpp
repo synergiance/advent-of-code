@@ -76,6 +76,23 @@ int TallySizes(File &directory) {
 	return directorySz;
 }
 
+int GetSmallestDirectorySizeOverSize(File &directory, int neededSpace) {
+	if (!directory.IsDirectory()) return 0;
+
+	int directorySz = directory.getSize();
+	if (directorySz < neededSpace) return 0;
+
+	for (File &child : directory.getChildren()) {
+		int childSize = GetSmallestDirectorySizeOverSize(child, neededSpace);
+		if (childSize == 0) continue;
+
+		if (childSize < directorySz)
+			directorySz = childSize;
+	}
+
+	return directorySz;
+}
+
 int main() {
 	std::ifstream iFile("terminal_output.log");
 	if (!iFile.is_open()) {
@@ -141,7 +158,10 @@ int main() {
 		}
 	}
 
-	std::cout<<"Total size: "<<TallySizes(rootDirectory)<<std::endl;
+	int freeSpace = TOTAL_DISK_SPACE - rootDirectory.getSize();
+	int neededSpace = NEEDED_SPACE - freeSpace;
+
+	std::cout<<"Smallest directory to delete: "<<GetSmallestDirectorySizeOverSize(rootDirectory, neededSpace)<<std::endl;
 
 	iFile.close();
 	return 0;
