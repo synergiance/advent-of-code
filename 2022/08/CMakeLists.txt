@@ -1,4 +1,4 @@
-add_executable(2022-08-unknown main.cpp)
+add_executable(2022-08-treehouse_scouting main.cpp)
 
-target_link_libraries(2022-08-unknown PRIVATE Parser)
-target_link_libraries(2022-08-unknown PRIVATE Reader)
+target_link_libraries(2022-08-treehouse_scouting PRIVATE Parser)
+target_link_libraries(2022-08-treehouse_scouting PRIVATE Reader)
