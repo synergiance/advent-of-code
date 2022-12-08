@@ -12,43 +12,74 @@ struct Coordinate {
 	int y;
 };
 
+struct Visibility {
+	int visibleNorth;
+	int visibleSouth;
+	int visibleEast;
+	int visibleWest;
+
+	int Total() {
+		return visibleNorth + visibleSouth + visibleEast + visibleWest;
+	}
+};
+
+struct TreeCandidate {
+	Visibility visibility;
+	Coordinate coordinate;
+	int treeHeight;
+	int scenicScore;
+
+	static int CalcScenicScore(TreeCandidate &treeCandidate) {
+		return treeCandidate.visibility.visibleNorth
+		     * treeCandidate.visibility.visibleSouth
+		     * treeCandidate.visibility.visibleEast
+		     * treeCandidate.visibility.visibleWest;
+	}
+};
+
 int **trees;
 int width;
 int height;
 
-int getScenicScore(Coordinate treeCoordinate) {
-	int visibleNorth = 0;
-	int visibleSouth = 0;
-	int visibleEast = 0;
-	int visibleWest = 0;
-
-	int treeHeight = trees[treeCoordinate.y][treeCoordinate.x];
+Visibility GetTreeVisibility(Coordinate &treeCoordinate, int &treeHeight) {
+	Visibility visibility{};
+	treeHeight = trees[treeCoordinate.y][treeCoordinate.x];
 
 	// North visibility
 	for (int y = treeCoordinate.y - 1; y >= 0; y--) {
-		visibleNorth++;
+		visibility.visibleNorth++;
 		if (treeHeight <= trees[y][treeCoordinate.x]) break;
 	}
 
 	// South visibility
 	for (int y = treeCoordinate.y + 1; y < height; y++) {
-		visibleSouth++;
+		visibility.visibleSouth++;
 		if (treeHeight <= trees[y][treeCoordinate.x]) break;
 	}
 
 	// East visibility
 	for (int x = treeCoordinate.x + 1; x < width; x++) {
-		visibleEast++;
+		visibility.visibleEast++;
 		if (treeHeight <= trees[treeCoordinate.y][x]) break;
 	}
 
 	// West visibility
 	for (int x = treeCoordinate.x - 1; x >= 0; x--) {
-		visibleWest++;
+		visibility.visibleWest++;
 		if (treeHeight <= trees[treeCoordinate.y][x]) break;
 	}
 
-	return visibleNorth * visibleSouth * visibleEast * visibleWest;
+	return visibility;
+}
+
+TreeCandidate GetTreeCandidate(Coordinate &treeCoordinate) {
+	TreeCandidate currentTree{};
+
+	currentTree.visibility = GetTreeVisibility(treeCoordinate, currentTree.treeHeight);
+	currentTree.scenicScore = TreeCandidate::CalcScenicScore(currentTree);
+	currentTree.coordinate = treeCoordinate;
+
+	return currentTree;
 }
 
 int main() {
@@ -75,7 +106,12 @@ int main() {
 		for (int y = 0; y < height; y++)
 			trees[y][x] = treeInput[y][x] - '0';
 
-	int highestScore = 0;
+	TreeCandidate bestTreeCandidate{};
+	bestTreeCandidate.visibility.visibleNorth = 0;
+	bestTreeCandidate.visibility.visibleSouth = 0;
+	bestTreeCandidate.visibility.visibleEast = 0;
+	bestTreeCandidate.visibility.visibleWest = 0;
+	bestTreeCandidate.treeHeight = 0;
 
 	for (int x = 0; x < width; x++) {
 		for (int y = 0; y < height; y++) {
@@ -83,14 +119,22 @@ int main() {
 			treeCoordinate.x = x;
 			treeCoordinate.y = y;
 
-			int treeScore = getScenicScore(treeCoordinate);
+			TreeCandidate treeCandidate = GetTreeCandidate(treeCoordinate);
 
-			if (treeScore > highestScore)
-				highestScore = treeScore;
+			if (treeCandidate.scenicScore > bestTreeCandidate.scenicScore)
+				bestTreeCandidate = treeCandidate;
 		}
 	}
 
-	std::cout<<"Best Scenic Score: "<<highestScore<<std::endl;
+	std::cout<<"The best tree has a height of "<<bestTreeCandidate.treeHeight;
+	std::cout<<", and a scenic score of "<<bestTreeCandidate.scenicScore<<std::endl;
+	std::cout<<"The tree can see "<<bestTreeCandidate.visibility.Total()<<" trees, which is"<<std::endl;
+	std::cout<<bestTreeCandidate.visibility.visibleNorth<<" trees to the north, ";
+	std::cout<<bestTreeCandidate.visibility.visibleSouth<<" trees to the south,"<<std::endl;
+	std::cout<<bestTreeCandidate.visibility.visibleEast<<" trees to the east, and ";
+	std::cout<<bestTreeCandidate.visibility.visibleWest<<" trees to the west."<<std::endl;
+	std::cout<<"The tree is located at "<<bestTreeCandidate.coordinate.x+1<<",";
+	std::cout<<bestTreeCandidate.coordinate.y+1<<std::endl;
 
 	delete [] trees;
 	iFile.close();
