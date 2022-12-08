@@ -28,4 +28,11 @@ namespace Syn {
 		}
 		return is;
 	}
+
+	std::istream &Reader::ReadEntireFile(std::istream &is, std::vector<std::string> &lines) {
+		std::string buffer;
+		while (getline(is, buffer)) lines.push_back(buffer);
+		while (lines.back().empty()) lines.erase(lines.cend());
+		return is;
+	}
 } // Syn
