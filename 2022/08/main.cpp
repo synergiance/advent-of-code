@@ -2,7 +2,6 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include <Parser.h>
 #include <Reader.h>
 
 using namespace Syn;
@@ -18,7 +17,7 @@ struct Visibility {
 	int visibleEast;
 	int visibleWest;
 
-	int Total() {
+	[[nodiscard]] int Total() const {
 		return visibleNorth + visibleSouth + visibleEast + visibleWest;
 	}
 };
@@ -112,6 +111,7 @@ int main() {
 	bestTreeCandidate.visibility.visibleEast = 0;
 	bestTreeCandidate.visibility.visibleWest = 0;
 	bestTreeCandidate.treeHeight = 0;
+	bestTreeCandidate.scenicScore = 0;
 
 	for (int x = 0; x < width; x++) {
 		for (int y = 0; y < height; y++) {
