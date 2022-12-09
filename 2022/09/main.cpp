@@ -8,9 +8,15 @@
 
 using namespace Syn;
 
+#define NUM_KNOTS 2
+
 struct Coordinate {
 	int x;
 	int y;
+
+	[[nodiscard]] bool isDiagonal() const {
+		return x != 0 && y != 0;
+	}
 
 	size_t operator()(const Coordinate &coordinate) const noexcept {
 		return (coordinate.x << 16) + coordinate.y;
@@ -50,6 +56,10 @@ struct Coordinate {
 		if (x < 0) x *= -1;
 		if (y < 0) y *= -1;
 		return x < y ? y : x;
+	}
+
+	[[nodiscard]] bool magnitude() const {
+		return Distance(*this, {0,0});
 	}
 };
 
@@ -94,11 +104,12 @@ int main() {
 	std::cout<<"File successfully opened!"<<std::endl;
 	std::string buffer;
 
-	Coordinate headLocation{0, 0};
-	Coordinate tailLocation{0, 0};
-	std::unordered_set<Coordinate> visitedLocations;
+	Coordinate knotLocations[NUM_KNOTS];
+	for (auto & knotLocation : knotLocations)
+		knotLocation = {0,0};
 
-	visitedLocations.insert(tailLocation);
+	std::unordered_set<Coordinate> visitedLocations;
+	visitedLocations.insert({0,0});
 
 	while (Reader::getline(iFile, buffer)) {
 		if (buffer.empty()) continue;
@@ -130,13 +141,32 @@ int main() {
 
 		int distance = atoi(tokens[1].c_str());
 		for (int i = 0; i < distance; i++) {
-			Coordinate oldHeadLoc = headLocation;
-			headLocation += direction;
+			Coordinate lastKnotLocation = knotLocations[0];
+			knotLocations[0] += direction;
 
-			if (Coordinate::Distance(headLocation, tailLocation) <= 1) continue;
+			Coordinate lastKnotDirection = knotLocations[0] - lastKnotLocation;
 
-			tailLocation = oldHeadLoc;
-			visitedLocations.insert(tailLocation);
+			bool tailMoved = true;
+
+			for (int j = 1; j < NUM_KNOTS; j++) {
+				if (Coordinate::Distance(knotLocations[j-1], knotLocations[j]) <= 1) {
+					tailMoved = false;
+					break;
+				}
+
+				if (lastKnotDirection.isDiagonal()) {
+					lastKnotLocation = knotLocations[j];
+					knotLocations[j] += lastKnotDirection;
+				} else {
+					Coordinate tmp = knotLocations[j];
+					knotLocations[j] = lastKnotLocation;
+					lastKnotLocation = tmp;
+					lastKnotDirection = knotLocations[j] - lastKnotLocation;
+				}
+			}
+
+			if (!tailMoved) continue;
+			visitedLocations.insert(knotLocations[NUM_KNOTS-1]);
 		}
 	}
 
@@ -145,3 +175,6 @@ int main() {
 	iFile.close();
 	return 0;
 }
+
+// If the previous knot moved diagonally, move the same diagonal
+// If the previous knot moved linearly, move to its old position
