@@ -8,7 +8,7 @@
 
 using namespace Syn;
 
-#define NUM_KNOTS 2
+#define NUM_KNOTS 10
 
 struct Coordinate {
 	int x;
@@ -50,6 +50,18 @@ struct Coordinate {
 		return newCoordinate;
 	}
 
+	Coordinate &operator*=(const Coordinate &other) {
+		this->x *= other.x;
+		this->y *= other.y;
+		return *this;
+	}
+
+	Coordinate operator*(const Coordinate &other) const {
+		Coordinate newCoordinate = *this;
+		newCoordinate *= other;
+		return newCoordinate;
+	}
+
 	static int Distance(const Coordinate &a, const Coordinate &b) {
 		int x = a.x - b.x;
 		int y = a.y - b.y;
@@ -58,8 +70,24 @@ struct Coordinate {
 		return x < y ? y : x;
 	}
 
-	[[nodiscard]] bool magnitude() const {
+	[[nodiscard]] int Magnitude() const {
 		return Distance(*this, {0,0});
+	}
+
+	[[nodiscard]] Coordinate Flattened() const {
+		Coordinate flattenedCoordinate = *this;
+		if (x < -1) flattenedCoordinate.x = -1;
+		if (x > 1) flattenedCoordinate.x = 1;
+		if (y < -1) flattenedCoordinate.y = -1;
+		if (y > 1) flattenedCoordinate.y = 1;
+		return flattenedCoordinate;
+	}
+
+	[[nodiscard]] Coordinate Absolute() const {
+		Coordinate absoluteCoordinate = *this;
+		if (x < 0) absoluteCoordinate.x *= -1;
+		if (y < 0) absoluteCoordinate.y *= -1;
+		return absoluteCoordinate;
 	}
 };
 
@@ -143,26 +171,27 @@ int main() {
 		for (int i = 0; i < distance; i++) {
 			Coordinate lastKnotLocation = knotLocations[0];
 			knotLocations[0] += direction;
-
-			Coordinate lastKnotDirection = knotLocations[0] - lastKnotLocation;
-
+			Coordinate lastKnotDirection = direction;
 			bool tailMoved = true;
 
 			for (int j = 1; j < NUM_KNOTS; j++) {
-				if (Coordinate::Distance(knotLocations[j-1], knotLocations[j]) <= 1) {
+				Coordinate offset = knotLocations[j-1] - knotLocations[j];
+
+				if (offset.Magnitude() <= 1) {
 					tailMoved = false;
 					break;
 				}
 
+				Coordinate stashedKnotLocation = lastKnotLocation;
+				lastKnotLocation = knotLocations[j];
+
 				if (lastKnotDirection.isDiagonal()) {
-					lastKnotLocation = knotLocations[j];
-					knotLocations[j] += lastKnotDirection;
+					knotLocations[j] += lastKnotDirection * offset.Flattened().Absolute();
 				} else {
-					Coordinate tmp = knotLocations[j];
-					knotLocations[j] = lastKnotLocation;
-					lastKnotLocation = tmp;
-					lastKnotDirection = knotLocations[j] - lastKnotLocation;
+					knotLocations[j] = stashedKnotLocation;
 				}
+
+				lastKnotDirection = knotLocations[j] - lastKnotLocation;
 			}
 
 			if (!tailMoved) continue;
@@ -175,6 +204,3 @@ int main() {
 	iFile.close();
 	return 0;
 }
-
-// If the previous knot moved diagonally, move the same diagonal
-// If the previous knot moved linearly, move to its old position
