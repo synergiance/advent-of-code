@@ -1,4 +1,4 @@
-add_library(Grid Grid.h Grid.cpp Coordinate.h Coordinate.cpp)
+add_library(Grid Coordinate.h Coordinate.cpp Grid.h)
 
 target_include_directories(Grid PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 

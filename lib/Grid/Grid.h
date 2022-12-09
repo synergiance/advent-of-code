@@ -16,9 +16,26 @@ namespace Syn {
 
 		T &operator[](Coordinate location);
 	private:
-		int width;
-		int height;
-		T *data;
+		int mWidth;
+		int mHeight;
+		T *mpData;
 	};
+
+	template<typename T>
+	Grid<T>::Grid(int width, int height) {
+		mpData = new T[width * height];
+		mWidth = width;
+		mHeight = height;
+	}
+
+	template<typename T>
+	Grid<T>::~Grid() {
+		delete [] mpData;
+	}
+
+	template<typename T>
+	T &Grid<T>::operator[](Coordinate location) {
+		return mpData[location.x + location.y * mWidth];
+	}
 
 } // Syn
