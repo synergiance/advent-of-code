@@ -8,16 +8,17 @@
 
 namespace Syn {
 
+	template<typename T>
 	class Grid {
 	public:
 		Grid(int width, int height);
 		~Grid();
 
-		int &operator[](Coordinate location);
+		T &operator[](Coordinate location);
 	private:
 		int width;
 		int height;
-		int *data;
+		T *data;
 	};
 
 } // Syn

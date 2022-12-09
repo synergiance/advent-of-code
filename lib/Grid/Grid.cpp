@@ -5,17 +5,20 @@
 #include "Grid.h"
 
 namespace Syn {
-	Grid::Grid(int width, int height) {
+	template<typename T>
+	Grid<T>::Grid(int width, int height) {
 		this->width = width;
 		this->height = height;
-		data = new int[width * height];
+		data = new T[width * height];
 	}
 
-	Grid::~Grid() {
+	template<typename T>
+	Grid<T>::~Grid() {
 		delete [] data;
 	}
 
-	int &Grid::operator[](Coordinate location) {
+	template<typename T>
+	T &Grid<T>::operator[](Coordinate location) {
 		return data[location.x + location.y * width];
 	}
 } // Syn
