@@ -10,7 +10,7 @@
 namespace Syn::Elf {
 
 	enum Command {
-		none, noop, addx
+		noop, addx
 	};
 
 	struct Instruction {
@@ -23,6 +23,7 @@ namespace Syn::Elf {
 		[[nodiscard]] int GetRegisterX() const;
 		size_t GetInstructionCount();
 
+		Processor();
 		void AddInstruction(Instruction &&instruction);
 		static Instruction DecodeInstruction(const std::string &instruction);
 		void Cycle();
@@ -33,6 +34,7 @@ namespace Syn::Elf {
 		int mCurrentCycle;
 
 		static int GetNumCycles(Command &command);
+		void LoadNextInstruction();
 	};
 
 } // Syn
