@@ -7,13 +7,44 @@
 
 using namespace Syn;
 
-enum Instruction {
+enum Func {
 	noop, addx
 };
 
-int samplePoints[] = {
-		20, 60, 100, 140, 180, 220
+struct Instruction {
+	Func func;
+	int time;
+	int param;
 };
+
+const int screenWidth = 40;
+const int screenHeight = 6;
+const int screenArraySz = screenHeight * screenWidth;
+
+Instruction DecodeInstruction(const std::string &instStr) {
+	Instruction inst{noop, 1, 0};
+	std::vector<std::string> tokens;
+	Parser::Tokenize(instStr, tokens);
+
+	if (tokens.size() < 2 || tokens[0] == "noop")
+		return inst;
+
+	inst.func = addx;
+	inst.param = atoi(tokens[1].c_str());
+	inst.time = 2;
+
+	return inst;
+}
+
+void ApplyInstruction(const Instruction &inst, int &x) {
+	if (inst.func == noop) return;
+	x += inst.param;
+}
+
+bool CheckSprite (int screenPos, int spritePos) {
+	int relativePos = screenPos - spritePos;
+	return relativePos >= -1 && relativePos <= 1;
+}
 
 int main() {
 	std::ifstream iFile("cpu_instructions.dat");
@@ -26,37 +57,34 @@ int main() {
 	std::string buffer;
 
 	int x = 1; // The CPU's only register
-	int cycle = 0;
 
-	int signalTotal = 0;
-	int sampleIdx = 0;
+	char screenOutput[screenArraySz];
+	Instruction inst = {noop, 1, 0};
+	int instBegin = -1;
 
-	while (sampleIdx < 6) {
-		Instruction inst = noop;
-		int param = 0;
-		int instTime = 1;
+	for (int cycle = 0; cycle < screenArraySz; cycle++) {
+		if (instBegin + inst.time - cycle == 0) {
+			ApplyInstruction(inst, x);
 
-		if (Reader::getline(iFile, buffer)) {
-			std::vector<std::string> tokens;
-			Parser::Tokenize(buffer, tokens);
-
-			if (tokens.size() >= 2 && tokens[0] == "addx") {
-				inst = addx;
-				param = atoi(tokens[1].c_str());
-				instTime = 2;
+			if (Reader::getline(iFile, buffer)) {
+				inst = DecodeInstruction(buffer);
+			} else {
+				inst = {noop, 1, 0};
 			}
+
+			instBegin = cycle;
 		}
 
-		cycle += instTime;
-
-		if (cycle >= samplePoints[sampleIdx])
-			signalTotal += x * samplePoints[sampleIdx++];
-
-		if (inst == addx)
-			x += param;
+		screenOutput[cycle] = CheckSprite(cycle % screenWidth, x) ? '#' : '.';
 	}
 
-	std::cout<<"Signal total: "<<signalTotal<<std::endl;
+	std::string str;
+	for (int ln = 0; ln < screenHeight; ln++) {
+		str.clear();
+		for (int col = 0; col < screenWidth; col++)
+			str += screenOutput[ln * screenWidth + col];
+		std::cout<<"Line "<<ln<<": "<<str<<std::endl;
+	}
 
 	iFile.close();
 	return 0;
