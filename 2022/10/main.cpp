@@ -36,9 +36,9 @@ int main() {
 	char screenOutput[screenArraySz];
 
 	for (int cycle = 0; cycle < screenArraySz; cycle++) {
-		communicatorProcessor.Cycle();
 		int spritePos = communicatorProcessor.GetRegisterX();
 		screenOutput[cycle] = CheckSprite(cycle % screenWidth, spritePos) ? '#' : '.';
+		communicatorProcessor.Cycle();
 	}
 
 	std::string str;

@@ -27,14 +27,14 @@ namespace Syn::Elf {
 		void AddInstruction(Instruction &&instruction);
 		static Instruction DecodeInstruction(const std::string &instruction);
 		void Cycle();
+		void Reset();
 	private:
 		int mRegisterX;
-		Instruction mCurrentInstruction;
 		std::vector<Instruction> mInstructions;
 		int mCurrentCycle;
 
 		static int GetNumCycles(Command &command);
-		void LoadNextInstruction();
+		void AdvanceInstruction();
 	};
 
 } // Syn

@@ -32,17 +32,22 @@ namespace Syn::Elf {
 	}
 
 	void Processor::Cycle() {
-		if (++mCurrentCycle < GetNumCycles(mCurrentInstruction.command)) return;
+		if (mInstructions.empty()) {
+			AdvanceInstruction();
+			return;
+		}
 
-		switch (mCurrentInstruction.command) {
+		if (++mCurrentCycle < GetNumCycles(mInstructions[0].command)) return;
+
+		switch (mInstructions[0].command) {
 			case addx:
-				mRegisterX += mCurrentInstruction.operand;
+				mRegisterX += mInstructions[0].operand;
 				break;
 			default:
 				break;
 		}
 
-		LoadNextInstruction();
+		AdvanceInstruction();
 	}
 
 	int Processor::GetNumCycles(Command &command) {
@@ -59,18 +64,15 @@ namespace Syn::Elf {
 	Processor::Processor() {
 		mRegisterX = 1;
 		mCurrentCycle = 0;
-		mCurrentInstruction = {noop, 0};
 	}
 
-	void Processor::LoadNextInstruction() {
+	void Processor::AdvanceInstruction() {
 		mCurrentCycle = 0;
-
-		if (mInstructions.empty()) {
-			mCurrentInstruction = {noop, 0};
-			return;
-		}
-
-		mCurrentInstruction = mInstructions[0];
 		mInstructions.erase(mInstructions.cbegin());
+	}
+
+	void Processor::Reset() {
+		mRegisterX = 1;
+		mCurrentCycle = 0;
 	}
 } // Syn
