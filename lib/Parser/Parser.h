@@ -11,5 +11,7 @@ namespace Syn {
 	class Parser {
 	public:
 		static void Tokenize(const std::string &input, std::vector<std::string> &tokens, char delimiter = ' ');
+		static void Trim(std::string &input, char trimmedChar = ' ');
+		static void TrimAndTokenize(std::string input, std::vector<std::string> &tokens, char delimeter = ' ');
 	};
 } // Syn

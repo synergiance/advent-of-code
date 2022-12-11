@@ -13,4 +13,16 @@ namespace Syn {
 			tokens.push_back(input.substr(substrBegin, i - substrBegin));
 		}
 	}
+
+	void Parser::Trim(std::string &input, char trimmedChar) {
+		while (input.starts_with(trimmedChar))
+			input.erase(input.cbegin());
+		while (input.ends_with(trimmedChar))
+			input.erase(input.cend()-1);
+	}
+
+	void Parser::TrimAndTokenize(std::string input, std::vector<std::string> &tokens, char delimeter) {
+		Trim(input, delimeter);
+		Tokenize(input, tokens, delimeter);
+	}
 } // Syn
