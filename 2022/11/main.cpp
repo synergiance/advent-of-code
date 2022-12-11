@@ -13,7 +13,7 @@ struct Operation {
 };
 
 struct Monkey {
-	std::vector<int> items;
+	std::vector<long long> items;
 	Operation operation;
 	int test;
 	int trueMonkey;
@@ -21,7 +21,7 @@ struct Monkey {
 	int timesInspected;
 };
 
-const int NumRounds = 20;
+const int NumRounds = 10000;
 
 Monkey ParseMonkey(const std::vector<std::string>& monkeyDefinition) {
 	if (monkeyDefinition.size() != 6) {
@@ -62,20 +62,21 @@ Monkey ParseMonkey(const std::vector<std::string>& monkeyDefinition) {
 	return newMonkey;
 }
 
-void TakeTurn(int monkeyIdx, std::vector<Monkey> &monkeys) {
+void TakeTurn(int monkeyIdx, std::vector<Monkey> &monkeys, long long modNum) {
 	Monkey &monkey = monkeys[monkeyIdx];
 	while (!monkey.items.empty()) {
-		int item = monkey.items[0];
+		long long item = monkey.items[0];
 		monkey.items.erase(monkey.items.cbegin());
 
-		int operand = monkey.operation.operand == -1 ? item : monkey.operation.operand;
+		long long operand = monkey.operation.operand == -1 ? item : monkey.operation.operand;
 
 		if (monkey.operation.multiply)
 			item *= operand;
 		else
 			item += operand;
 
-		item /= 3;
+		//item /= 3;
+		item %= modNum;
 
 		if (item % monkey.test == 0)
 			monkeys[monkey.trueMonkey].items.push_back(item);
@@ -97,21 +98,23 @@ int main() {
 	std::vector<std::string> buffer;
 
 	std::vector<Monkey> monkeys;
+	long long modNum = 1;
 
 	while (true) {
 		Reader::ReadUntilEmptyLn(iFile, buffer);
 		if (buffer.empty()) break;
 
 		monkeys.push_back(ParseMonkey(buffer));
+		modNum *= monkeys.back().test;
 		buffer.clear();
 	}
 
 	for (int i = 0; i < NumRounds; i++)
 		for (int j = 0; j < monkeys.size(); j++)
-			TakeTurn(j, monkeys);
+			TakeTurn(j, monkeys, modNum);
 
-	int mostTimesInspected = 0;
-	int secondMostTimesInspected = 0;
+	long long mostTimesInspected = 0;
+	long long secondMostTimesInspected = 0;
 
 	for (auto & monkey : monkeys) {
 		if (monkey.timesInspected > mostTimesInspected) {
@@ -122,7 +125,7 @@ int main() {
 		}
 	}
 
-	int monkeyBusiness = mostTimesInspected * secondMostTimesInspected;
+	long long monkeyBusiness = mostTimesInspected * secondMostTimesInspected;
 
 	std::cout<<"Monkey business: "<<monkeyBusiness<<std::endl;
 
