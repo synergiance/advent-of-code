@@ -21,6 +21,7 @@ namespace Syn {
 
 		size_t operator()(const Coordinate &coordinate) const noexcept;
 		bool operator==(const Coordinate &other) const;
+		bool operator!=(const Coordinate &other) const;
 		Coordinate &operator+=(const Coordinate &other);
 		Coordinate operator+(const Coordinate &other) const;
 		Coordinate &operator-=(const Coordinate &other);

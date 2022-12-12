@@ -45,6 +45,10 @@ namespace Syn {
 		return x == other.x && y == other.y;
 	}
 
+	bool Coordinate::operator!=(const Coordinate &other) const {
+		return x != other.x && y != other.y;
+	}
+
 	Coordinate &Coordinate::operator+=(const Coordinate &other) {
 		this->x += other.x;
 		this->y += other.y;

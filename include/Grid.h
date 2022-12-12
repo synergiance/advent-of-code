@@ -15,11 +15,23 @@ namespace Syn {
 		~Grid();
 
 		T &operator[](Coordinate location);
+		int GetWidth();
+		int GetHeight();
 	private:
 		int mWidth;
 		int mHeight;
 		T *mpData;
 	};
+
+	template<typename T>
+	int Grid<T>::GetWidth() {
+		return mWidth;
+	}
+
+	template<typename T>
+	int Grid<T>::GetHeight() {
+		return mHeight;
+	}
 
 	template<typename T>
 	Grid<T>::Grid(int width, int height) {
