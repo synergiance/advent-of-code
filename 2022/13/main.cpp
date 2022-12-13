@@ -64,7 +64,6 @@ int GetNumLength(const std::string &str) {
 }
 
 void ReadArray(std::string input, ListItem &item) {
-	std::cout<<"Reading array: \""<<input<<"\""<<std::endl;
 	if (input[0] != '[' || input[input.size()-1] != ']') return;
 
 	input.erase(input.cbegin());
@@ -85,7 +84,6 @@ void ReadArray(std::string input, ListItem &item) {
 		} else {
 			int numLen = GetNumLength(input);
 			std::string numStr = input.substr(0, numLen);
-			std::cout<<"Reading number: "<<numStr<<std::endl;
 			item.list.push_back({atoi(numStr.c_str())});
 
 			if (input.size() > numLen + 1)
@@ -103,10 +101,7 @@ void SwapItems(std::vector<ListItem> &items, int leftPos) {
 
 void CompareAndSwap(std::vector<ListItem> &items, int leftPos) {
 	if (Compare(items[leftPos], items[leftPos + 1]) >= 0) return;
-	std::cout<<"Swapping "<<(leftPos+1)<<" with "<<(leftPos+2)<<std::endl;
 	SwapItems(items, leftPos);
-	if (Compare(items[leftPos], items[leftPos + 1]) < 0)
-		std::cerr<<"Warning: Something went wrong with the swap!";
 }
 
 void PrintItem(ListItem &item) {
@@ -172,7 +167,10 @@ int main() {
 		SwapItems(items, divider6Pos - 1);
 	}
 
-	std::cout<<"Decoder Key: "<<(++divider2Pos * ++divider6Pos)<<std::endl;
+	std::cout<<"Divider 2 Location: "<<++divider2Pos<<std::endl;
+	std::cout<<"Divider 6 Location: "<<++divider6Pos<<std::endl;
+
+	std::cout<<"Decoder Key: "<<(divider2Pos * divider6Pos)<<std::endl;
 
 	iFile.close();
 	return 0;
