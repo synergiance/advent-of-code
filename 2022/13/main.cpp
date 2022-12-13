@@ -57,12 +57,6 @@ int GetClosingBracket(const std::string &str) {
 	return -1;
 }
 
-int GetNumLength(const std::string &str) {
-	for (int i = 0; i < str.size(); i++)
-		if (!std::isdigit(str[i])) return i;
-	return str.size();
-}
-
 void ReadArray(std::string input, ListItem &item) {
 	if (input[0] != '[' || input[input.size()-1] != ']') return;
 
@@ -82,7 +76,7 @@ void ReadArray(std::string input, ListItem &item) {
 				input = input.substr(nextBracket + 2);
 			else input = "";
 		} else {
-			int numLen = GetNumLength(input);
+			size_t numLen = Parser::GetNumberLength(input);
 			std::string numStr = input.substr(0, numLen);
 			item.list.push_back({atoi(numStr.c_str())});
 

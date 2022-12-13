@@ -6,10 +6,10 @@
 
 namespace Syn {
 	void Parser::Tokenize(const std::string &input, std::vector<std::string> &tokens, char delimiter) {
-		for (int i = 0; i < input.length(); i++) {
-			int substrBegin = i;
-			i = (int)input.find(delimiter, substrBegin);
-			if (i == std::string::npos) i = (int)input.size();
+		for (size_t i = 0; i < input.length(); i++) {
+			size_t substrBegin = i;
+			i = input.find(delimiter, substrBegin);
+			if (i == std::string::npos) i = input.size();
 			tokens.push_back(input.substr(substrBegin, i - substrBegin));
 		}
 	}
@@ -24,5 +24,11 @@ namespace Syn {
 	void Parser::TrimAndTokenize(std::string input, std::vector<std::string> &tokens, char delimeter) {
 		Trim(input, delimeter);
 		Tokenize(input, tokens, delimeter);
+	}
+
+	size_t Parser::GetNumberLength(const std::string &input) {
+		for (size_t i = 0; i < input.size(); i++)
+			if (!std::isdigit(input[i])) return i;
+		return input.size();
 	}
 } // Syn
