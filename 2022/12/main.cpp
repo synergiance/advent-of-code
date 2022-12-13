@@ -86,7 +86,6 @@ void GeneratePathMap(Coordinate &targetPos, Grid<int> &height, Grid<int> &path) 
 
 int WalkPathMap(Coordinate position, Coordinate target, Grid<int> &height, Grid<int> &path, Grid<int> walk) {
 	int numSteps = 0;
-	std::cout<<std::endl<<"Starting at: "<<ToStringCoordinate(position)<<std::endl;
 	while (path[position] > 0) {
 		int lowestDistance = path[position] + 2;
 		Coordinate nextDirection = {0,0};
@@ -111,8 +110,6 @@ int WalkPathMap(Coordinate position, Coordinate target, Grid<int> &height, Grid<
 
 		position += nextDirection;
 		numSteps++;
-
-		std::cout<<"Moved to: "<<ToStringCoordinate(position)<<std::endl;
 	}
 
 	return numSteps;
@@ -160,11 +157,9 @@ int main() {
 
 	GeneratePathMap(targetPos, heightMap, pathMap);
 
-	PrintPath(pathMap);
+	//PrintPath(pathMap);
 
 	int numSteps = WalkPathMap(startingPos, targetPos, heightMap, pathMap, walkingMap);
-
-	std::cout<<"Number of steps: "<<numSteps<<std::endl;
 
 	int lowestDistance = 0xFFFF;
 	for (int x = 0; x < width; x++) {
@@ -178,8 +173,7 @@ int main() {
 		}
 	}
 
-	std::cout<<"Shortest path: "<<lowestDistance<<std::endl<<std::endl;
-
+	std::cout<<std::endl;
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
 			int direction = walkingMap[{x, y}];
@@ -203,6 +197,9 @@ int main() {
 
 		std::cout<<std::endl;
 	}
+
+	std::cout<<std::endl<<"Number of steps: "<<numSteps<<std::endl;
+	std::cout<<"Shortest path: "<<lowestDistance<<std::endl;
 
 	iFile.close();
 	return 0;
