@@ -46,7 +46,7 @@ namespace Syn {
 	}
 
 	bool Coordinate::operator!=(const Coordinate &other) const {
-		return x != other.x && y != other.y;
+		return x != other.x || y != other.y;
 	}
 
 	Coordinate &Coordinate::operator+=(const Coordinate &other) {

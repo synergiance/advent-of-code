@@ -17,6 +17,8 @@ const Coordinate movementDirections[] = {
 		{1, 0}
 };
 
+const std::string movementSymbols[] = { "↓", "↑", "←", "→" };
+
 std::string ToStringCoordinate(Coordinate coordinate) {
 	std::string str = "(" + std::to_string(coordinate.x);
 	str += "," + std::to_string(coordinate.y) + ")";
@@ -82,7 +84,7 @@ void GeneratePathMap(Coordinate &targetPos, Grid<int> &height, Grid<int> &path) 
 	}
 }
 
-int WalkPathMap(Coordinate position, Coordinate target, Grid<int> &height, Grid<int> &path) {
+int WalkPathMap(Coordinate position, Coordinate target, Grid<int> &height, Grid<int> &path, Grid<int> walk) {
 	int numSteps = 0;
 	std::cout<<std::endl<<"Starting at: "<<ToStringCoordinate(position)<<std::endl;
 	while (path[position] > 0) {
@@ -97,6 +99,15 @@ int WalkPathMap(Coordinate position, Coordinate target, Grid<int> &height, Grid<
 			lowestDistance = path[testLocation];
 			nextDirection = direction;
 		}
+
+		for (int i = 0; i < 4; i++) {
+			if (nextDirection != movementDirections[i]) continue;
+			walk[position] = i+1;
+			break;
+		}
+
+		if (walk[position] == 0)
+			walk[position] = 5;
 
 		position += nextDirection;
 		numSteps++;
@@ -124,6 +135,7 @@ int main() {
 
 	Grid<int> heightMap(width, height);
 	Grid<int> pathMap(width, height);
+	Grid<int> walkingMap(width, height);
 
 	Coordinate startingPos{};
 	Coordinate targetPos{};
@@ -142,6 +154,7 @@ int main() {
 
 			heightMap[{x, y}] = (int)(ch - 'a');
 			pathMap[{x, y}] = -2;
+			walkingMap[{x, y}] = 0;
 		}
 	}
 
@@ -149,7 +162,7 @@ int main() {
 
 	PrintPath(pathMap);
 
-	int numSteps = WalkPathMap(startingPos, targetPos, heightMap, pathMap);
+	int numSteps = WalkPathMap(startingPos, targetPos, heightMap, pathMap, walkingMap);
 
 	std::cout<<"Number of steps: "<<numSteps<<std::endl;
 
@@ -165,7 +178,31 @@ int main() {
 		}
 	}
 
-	std::cout<<"Shortest path: "<<lowestDistance<<std::endl;
+	std::cout<<"Shortest path: "<<lowestDistance<<std::endl<<std::endl;
+
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			int direction = walkingMap[{x, y}];
+			char ch = input[y][x];
+			switch (direction) {
+				case 1:
+				case 2:
+				case 3:
+				case 4:
+					//std::cout<<movementSymbols[direction - 1];
+					std::cout<<"\x1b[31m"<<ch<<"\x1b[0m";
+					break;
+				case 0:
+					std::cout<<ch;
+					break;
+				default:
+					std::cout<<"\x1b[34m"<<ch<<"\x1b[0m";
+					break;
+			}
+		}
+
+		std::cout<<std::endl;
+	}
 
 	iFile.close();
 	return 0;

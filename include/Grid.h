@@ -41,9 +41,7 @@ namespace Syn {
 	}
 
 	template<typename T>
-	Grid<T>::~Grid() {
-		delete [] mpData;
-	}
+	Grid<T>::~Grid() = default;
 
 	template<typename T>
 	T &Grid<T>::operator[](Coordinate location) {
