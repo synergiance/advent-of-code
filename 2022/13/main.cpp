@@ -17,7 +17,7 @@ void ConvertToList(ListItem &item) {
 	item.value = -1;
 }
 
-int Compare(ListItem &left, ListItem &right) {
+int Compare(ListItem left, ListItem right) {
 	if ((left.value == -1) != (right.value == -1)) {
 		if (left.value != -1) ConvertToList(left);
 		if (right.value != -1) ConvertToList(right);
@@ -95,6 +95,35 @@ void ReadArray(std::string input, ListItem &item) {
 	}
 }
 
+void SwapItems(std::vector<ListItem> &items, int leftPos) {
+	ListItem item = items[leftPos];
+	items.erase(items.begin() + leftPos);
+	items.insert(items.begin() + leftPos + 1, item);
+}
+
+void CompareAndSwap(std::vector<ListItem> &items, int leftPos) {
+	if (Compare(items[leftPos], items[leftPos + 1]) >= 0) return;
+	std::cout<<"Swapping "<<(leftPos+1)<<" with "<<(leftPos+2)<<std::endl;
+	SwapItems(items, leftPos);
+	if (Compare(items[leftPos], items[leftPos + 1]) < 0)
+		std::cerr<<"Warning: Something went wrong with the swap!";
+}
+
+void PrintItem(ListItem &item) {
+	if (item.value != -1) {
+		std::cout<<item.value;
+		return;
+	}
+
+	std::cout<<"[";
+	if (item.list.size() > 0) PrintItem(item.list[0]);
+	for (int i = 1; i < item.list.size(); i++) {
+		std::cout<<",";
+		PrintItem(item.list[i]);
+	}
+	std::cout<<"]";
+}
+
 int main() {
 	std::ifstream iFile("distress_call.dat");
 	if (!iFile.is_open()) {
@@ -103,27 +132,47 @@ int main() {
 	}
 
 	std::cout<<"File successfully opened!"<<std::endl;
-	std::vector<std::string> buffer;
+	std::string buffer;
 
-	int total = 0;
+	std::vector<ListItem> items;
 
-	int idx = 1;
 	while (iFile) {
 		buffer.clear();
-		Reader::ReadUntilEmptyLn(iFile, buffer);
+		Reader::getline(iFile, buffer);
+		if (buffer.empty()) continue;
 
-		ListItem leftItem{};
-		ListItem rightItem{};
-
-		ReadArray(buffer[0], leftItem);
-		ReadArray(buffer[1], rightItem);
-
-		if (Compare(leftItem, rightItem) >= 0) total += idx;
-
-		idx++;
+		ListItem newItem{};
+		ReadArray(buffer, newItem);
+		items.push_back(newItem);
 	}
 
-	std::cout<<"Total: "<<total<<std::endl;
+	for (int i = items.size() - 1; i > 0; i--)
+		for (int j = 0; j < i; j++)
+			CompareAndSwap(items, j);
+
+
+	ListItem divider2{};
+	ListItem divider6{};
+	ReadArray("[[2]]", divider2);
+	ReadArray("[[6]]", divider6);
+	int divider2Pos;
+	int divider6Pos;
+
+	items.push_back(divider2);
+
+	for (divider2Pos = items.size() - 1; divider2Pos > 0; divider2Pos--) {
+		if (Compare(items[divider2Pos - 1], items[divider2Pos]) >= 0) break;
+		SwapItems(items, divider2Pos - 1);
+	}
+
+	items.push_back(divider6);
+
+	for (divider6Pos = items.size() - 1; divider6Pos > 0; divider6Pos--) {
+		if (Compare(items[divider6Pos - 1], items[divider6Pos]) >= 0) break;
+		SwapItems(items, divider6Pos - 1);
+	}
+
+	std::cout<<"Decoder Key: "<<(++divider2Pos * ++divider6Pos)<<std::endl;
 
 	iFile.close();
 	return 0;
