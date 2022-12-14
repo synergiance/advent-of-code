@@ -3,6 +3,7 @@
 //
 
 #include "Coordinate.h"
+#include <cstdlib>
 
 namespace Syn {
 	bool Coordinate::isDiagonal() const {
@@ -35,6 +36,17 @@ namespace Syn {
 		if (x < 0) absoluteCoordinate.x *= -1;
 		if (y < 0) absoluteCoordinate.y *= -1;
 		return absoluteCoordinate;
+	}
+
+	Coordinate Coordinate::Parse(const char *input, size_t len) {
+		Coordinate newCoordinate{};
+		int i;
+		for (i = 0; i < len; i++)
+			if (input[i] == ',') break;
+		i++;
+		newCoordinate.x = atoi(input);
+		newCoordinate.y = atoi(input+i);
+		return newCoordinate;
 	}
 
 	size_t Coordinate::operator()(const Coordinate &coordinate) const noexcept {

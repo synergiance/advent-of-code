@@ -18,6 +18,7 @@ namespace Syn {
 		[[nodiscard]] int Magnitude() const;
 		[[nodiscard]] Coordinate Flattened() const;
 		[[nodiscard]] Coordinate Absolute() const;
+		[[nodiscard]] static Coordinate Parse(const char *input, size_t len = 0x20);
 
 		size_t operator()(const Coordinate &coordinate) const noexcept;
 		bool operator==(const Coordinate &other) const;
