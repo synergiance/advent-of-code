@@ -46,6 +46,7 @@ void ImportRockPath(const std::string &input, Grid<char> &map, Coordinate &topLe
 
 bool DropSand(Grid<char> &map) {
 	Coordinate sandUnitPos = gSandRiftPos;
+	if (map[gSandRiftPos] != gSandRift) return false;
 
 	bool canContinue = true;
 
@@ -95,11 +96,13 @@ int main() {
 	}
 
 	rockMap[gSandRiftPos] = gSandRift;
+	bottomRight.y += 2;
 
-	if (topLeft.x > 0) topLeft.x--;
-	if (topLeft.y > 0) topLeft.y = 0;
-	if (bottomRight.x < DIMENSIONS - 1) bottomRight.x++;
-	if (bottomRight.y < DIMENSIONS - 1) bottomRight.y++;
+	rockMap.DrawLine({0, bottomRight.y}, {DIMENSIONS - 1, bottomRight.y}, gRock);
+
+	topLeft.y = 0;
+	topLeft.x = 500 - bottomRight.y - 3;
+	bottomRight.x = 500 + bottomRight.y + 3;
 
 	int sandUnits = 0;
 	while (DropSand(rockMap))
