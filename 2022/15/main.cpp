@@ -8,8 +8,6 @@
 
 using namespace Syn;
 
-const char gAirChar = ' ';
-
 const int gRange = 4000000;
 
 int GetNumFromStr(const char* str, size_t len = 0x20) {
@@ -42,9 +40,6 @@ int main() {
 	std::string buffer;
 
 	std::vector<Sensor> sensors;
-
-	UnboundedGrid<char> scan;
-	scan.Fill(gAirChar);
 
 	while (Reader::getline(iFile, buffer)) {
 		if (buffer.empty()) continue;
