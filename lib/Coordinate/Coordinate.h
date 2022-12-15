@@ -41,4 +41,10 @@ namespace std {
 	template<> struct hash<Syn::Coordinate> {
 		size_t operator()(const Syn::Coordinate &coordinate) const noexcept;
 	};
+
+	template<> struct less<Syn::Coordinate> {
+		bool operator()(const Syn::Coordinate &lhs, const Syn::Coordinate &rhs) const {
+			return (lhs.x + lhs.y) < (rhs.x + rhs.y);
+		}
+	};
 }

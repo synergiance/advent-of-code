@@ -43,11 +43,12 @@ namespace Syn {
 
 		void Fill(T fill);
 		void DrawLine(Coordinate start, Coordinate finish, T fill);
+		bool WasTouched(Coordinate &location);
 	private:
 		const static int msChunkDimension = 0x10;
 		Coordinate mUpperLeft{};
 		Coordinate mLowerRight{};
-		std::map<Coordinate, Grid<T>> mData;
+		std::map<Coordinate, T> mData;
 		T mFill;
 
 		void ExpandBoundary(Coordinate &location);
@@ -57,6 +58,11 @@ namespace Syn {
 
 		T &GetCellInternal(Coordinate &location);
 	};
+
+	template<typename T>
+	bool UnboundedGrid<T>::WasTouched(Coordinate &location) {
+		return mData.contains(location);
+	}
 
 	template<typename T>
 	UnboundedGrid<T>::UnboundedGrid() {
@@ -110,7 +116,7 @@ namespace Syn {
 	template<typename T>
 	T &UnboundedGrid<T>::GetCellInternal(Coordinate &location) {
 		if (!mData.contains(location))
-			mData.insert(location, mFill);
+			mData.insert({location, mFill});
 		return mData[location];
 	}
 
@@ -125,9 +131,7 @@ namespace Syn {
 	template<typename T>
 	T &UnboundedGrid<T>::operator[](Coordinate &location) {
 		ExpandBoundary(location);
-		if (!mData.contains(location))
-			mData.insert(location, mFill);
-		return mData[location];
+		return GetCellInternal(location);
 	}
 
 	template<typename T>
