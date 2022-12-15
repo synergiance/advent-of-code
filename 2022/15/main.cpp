@@ -8,12 +8,9 @@
 
 using namespace Syn;
 
-const char gSensorChar = 'S';
-const char gBeaconChar = 'B';
 const char gAirChar = ' ';
-const char gCoverChar = '#';
 
-const int gBeaconRow = 2000000;
+const int gRange = 4000000;
 
 int GetNumFromStr(const char* str, size_t len = 0x20) {
 	size_t i;
@@ -46,9 +43,6 @@ int main() {
 
 	std::vector<Sensor> sensors;
 
-	int minimum = 0xFFFFFFF;
-	int maximum = -0xFFFFFFF;
-
 	UnboundedGrid<char> scan;
 	scan.Fill(gAirChar);
 
@@ -67,34 +61,38 @@ int main() {
 
 		sensor.distance = GetManhattanDistance(sensor.location, sensor.closestBeacon);
 
-		int distanceFromRow = abs(sensor.location.y - gBeaconRow);
-
 		std::cout<<"Sensor located at x="<<sensor.location.x<<", y="<<sensor.location.y<<std::endl;
 		std::cout<<"Sensor's beacon at x="<<sensor.closestBeacon.x<<", y="<<sensor.closestBeacon.y<<std::endl;
-		std::cout<<"Distance from sensor to beacon: "<<sensor.distance<<std::endl;
-		std::cout<<"Sensor is "<<distanceFromRow<<" units from scanned row."<<std::endl;
-		std::cout<<"Sensor "<<(distanceFromRow <= sensor.distance ? "touches" : "does not touch")<<" the scanned row"<<std::endl<<std::endl;
+		std::cout<<"Distance from sensor to beacon: "<<sensor.distance<<std::endl<<std::endl;
 
-		if (sensor.location.x - sensor.distance < minimum) minimum = sensor.location.x - sensor.distance;
-		if (sensor.location.x + sensor.distance > maximum) maximum = sensor.location.x + sensor.distance;
-
-		if (sensor.distance >= distanceFromRow) sensors.push_back(sensor);
+		sensors.push_back(sensor);
 	}
 
-	int numCoveredSpots = 0;
+	std::cout<<"Number of sensors: "<<sensors.size()<<std::endl;
 
-	for (int x = minimum; x <= maximum; x++) {
-		Coordinate currentCoordinate = {x, gBeaconRow};
-		for (Sensor sensor: sensors) {
-			if (GetManhattanDistance(currentCoordinate, sensor.location) > sensor.distance) continue;
-			if (currentCoordinate != sensor.closestBeacon) numCoveredSpots++;
-			break;
+	Coordinate foundCoordinate = {-1, -1};
+
+	bool isOccupied = true;
+	for (int y = 0; y < gRange && isOccupied; y++) {
+		for (int x = 0; x <= gRange && isOccupied; x++) {
+			Coordinate currentCoordinate = {x, y};
+			isOccupied = false;
+			for (Sensor sensor: sensors) {
+				if (GetManhattanDistance(currentCoordinate, sensor.location) > sensor.distance) continue;
+				x = sensor.location.x + sensor.distance - abs(y - sensor.location.y);
+				isOccupied = true;
+				break;
+			}
+			if (!isOccupied) foundCoordinate = currentCoordinate;
 		}
 	}
 
-	std::cout<<"Number of sensors touching row: "<<sensors.size()<<std::endl;
-	std::cout<<"Minimum Range: "<<minimum<<", Maximum Range: "<<maximum<<std::endl;
-	std::cout<<"Number of spots that cannot contain a beacon: "<<numCoveredSpots<<std::endl;
+	if (foundCoordinate == Coordinate{-1, -1}) {
+		std::cout<<"Could not find!"<<std::endl;
+	} else {
+		std::cout<<"Found location: x="<<foundCoordinate.x<<", y="<<foundCoordinate.y<<std::endl;
+		std::cout<<"Tuning frequency: "<<((long long)foundCoordinate.x * (long long)gRange + (long long)foundCoordinate.y)<<std::endl;
+	}
 
 	iFile.close();
 	return 0;
