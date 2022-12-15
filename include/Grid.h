@@ -5,6 +5,7 @@
 #pragma once
 
 #include <Coordinate.h>
+#include <map>
 
 namespace Syn {
 
@@ -30,6 +31,117 @@ namespace Syn {
 
 		int calcIndex(Coordinate location);
 	};
+
+	template<typename T>
+	class UnboundedGrid {
+	public:
+		UnboundedGrid();
+
+		T &operator[](Coordinate &location);
+		[[nodiscard]] Coordinate GetUpperLeft() const;
+		[[nodiscard]] Coordinate GetLowerRight() const;
+
+		void Fill(T fill);
+		void DrawLine(Coordinate start, Coordinate finish, T fill);
+	private:
+		const static int msChunkDimension = 0x10;
+		Coordinate mUpperLeft{};
+		Coordinate mLowerRight{};
+		std::map<Coordinate, Grid<T>> mData;
+		T mFill;
+
+		void ExpandBoundary(Coordinate &location);
+
+		void DrawVertical(int x, int y1, int y2, T fill);
+		void DrawHorizontal(int x1, int x2, int y, T fill);
+
+		T &GetCellInternal(Coordinate &location);
+	};
+
+	template<typename T>
+	UnboundedGrid<T>::UnboundedGrid() {
+		mFill = '\0';
+		mUpperLeft = {0,0};
+		mLowerRight = {0,0};
+	}
+
+	template<typename T>
+	Coordinate UnboundedGrid<T>::GetUpperLeft() const {
+		return mUpperLeft;
+	}
+
+	template<typename T>
+	Coordinate UnboundedGrid<T>::GetLowerRight() const {
+		return mLowerRight;
+	}
+
+	template<typename T>
+	void UnboundedGrid<T>::Fill(T fill) {
+		mData.clear();
+		mFill = fill;
+		mUpperLeft = {0,0};
+		mLowerRight = {0,0};
+	}
+
+	template<typename T>
+	void UnboundedGrid<T>::DrawHorizontal(int x1, int x2, int y, T fill) {
+		if (x1 > x2) {
+			int t = x1;
+			x1 = x2;
+			x2 = t;
+		}
+
+		for (int x = x1; x <= x2; x++)
+			GetCellInternal({x, y}) = fill;
+	}
+
+	template<typename T>
+	void UnboundedGrid<T>::DrawVertical(int x, int y1, int y2, T fill) {
+		if (y1 > y2) {
+			int t = y1;
+			y1 = y2;
+			y2 = t;
+		}
+
+		for (int y = y1; y <= y2; y++)
+			GetCellInternal({x, y}) = fill;
+	}
+
+	template<typename T>
+	T &UnboundedGrid<T>::GetCellInternal(Coordinate &location) {
+		if (!mData.contains(location))
+			mData.insert(location, mFill);
+		return mData[location];
+	}
+
+	template<typename T>
+	void UnboundedGrid<T>::DrawLine(Coordinate start, Coordinate finish, T fill) {
+		ExpandBoundary(start);
+		ExpandBoundary(finish);
+		if (start.x == finish.x) DrawVertical(start.x, start.y, finish.y, fill);
+		if (start.y == finish.y) DrawHorizontal(start.x, finish.x, finish.y, fill);
+	}
+
+	template<typename T>
+	T &UnboundedGrid<T>::operator[](Coordinate &location) {
+		ExpandBoundary(location);
+		if (!mData.contains(location))
+			mData.insert(location, mFill);
+		return mData[location];
+	}
+
+	template<typename T>
+	void UnboundedGrid<T>::ExpandBoundary(Coordinate &location) {
+		if (mData.empty()) {
+			mUpperLeft = mLowerRight = location;
+			return;
+		}
+
+		if (location.x < mUpperLeft.x) mUpperLeft.x = location.x;
+		if (location.y < mUpperLeft.y) mUpperLeft.y = location.y;
+		if (location.x > mLowerRight.x) mLowerRight.x = location.x;
+		if (location.y > mLowerRight.y) mLowerRight.y = location.y;
+	}
 
 	template<typename T>
 	void Grid<T>::DrawHorizontal(int x1, int x2, int y, T fill) {

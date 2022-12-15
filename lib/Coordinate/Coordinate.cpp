@@ -96,6 +96,30 @@ namespace Syn {
 		newCoordinate *= other;
 		return newCoordinate;
 	}
+
+	Coordinate &Coordinate::operator/=(const Coordinate &other) {
+		this->x /= other.x;
+		this->y /= other.y;
+		return *this;
+	}
+
+	Coordinate Coordinate::operator/(const Coordinate &other) const {
+		Coordinate newCoordinate = *this;
+		newCoordinate /= other;
+		return newCoordinate;
+	}
+
+	Coordinate &Coordinate::operator%=(const Coordinate &other) {
+		this->x %= other.x;
+		this->y %= other.y;
+		return *this;
+	}
+
+	Coordinate Coordinate::operator%(const Coordinate &other) const {
+		Coordinate newCoordinate = *this;
+		newCoordinate %= other;
+		return newCoordinate;
+	}
 } // Syn
 
 size_t std::hash<Syn::Coordinate>::operator()(const Syn::Coordinate &coordinate) const noexcept {

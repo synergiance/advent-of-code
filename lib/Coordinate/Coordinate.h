@@ -29,6 +29,10 @@ namespace Syn {
 		Coordinate operator-(const Coordinate &other) const;
 		Coordinate &operator*=(const Coordinate &other);
 		Coordinate operator*(const Coordinate &other) const;
+		Coordinate &operator/=(const Coordinate &other);
+		Coordinate operator/(const Coordinate &other) const;
+		Coordinate &operator%=(const Coordinate &other);
+		Coordinate operator%(const Coordinate &other) const;
 	};
 
 } // Syn
