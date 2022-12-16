@@ -14,5 +14,6 @@ namespace Syn {
 		static void Trim(std::string &input, char trimmedChar = ' ');
 		static void TrimAndTokenize(std::string input, std::vector<std::string> &tokens, char delimeter = ' ');
 		static size_t GetNumberLength(const std::string &input);
+		static int GetNumFromStr(const char* str, size_t len = 0x20);
 	};
 } // Syn

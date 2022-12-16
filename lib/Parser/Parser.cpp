@@ -31,4 +31,11 @@ namespace Syn {
 			if (!std::isdigit(input[i])) return i;
 		return input.size();
 	}
+
+	int Parser::GetNumFromStr(const char* str, size_t len) {
+		size_t i;
+		for (i = 0; i < len; i++)
+			if (std::isdigit(str[i]) || str[i] == '-') break;
+		return atoi(str + i);
+	}
 } // Syn
