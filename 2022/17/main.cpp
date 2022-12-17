@@ -13,7 +13,7 @@ const int MaxRockDimension = 4;
 const int RoomWidth = 7;
 
 const char RockChar = '#';
-const char AirChar = ' ';
+const char AirChar = '.';
 
 const Coordinate DownDirection = {0, -1};
 const Coordinate LeftDirection = {-1, 0};
@@ -108,7 +108,17 @@ int main() {
 
 		ApplyStone(rockLocation, currentRock, room);
 
-		for (int j = highestRock + 1; j < rockLocation.y + MaxRockDimension; j++) {
+		if (i < 10) {
+			for (int j = 20; j >= 0; j--) {
+				for (int k = 0; k < RoomWidth; k++) {
+					std::cout<<(room[{k, j}] ? RockChar : AirChar);
+				}
+				std::cout<<std::endl;
+			}
+			std::cout<<std::endl;
+		}
+
+		for (int j = highestRock + 1; j < rockLocation.y + MaxRockDimension + 1; j++) {
 			bool hasRock = false;
 			for (int k = 0; k < RoomWidth; k++) {
 				if (!room[{k,j}]) continue;
@@ -119,20 +129,11 @@ int main() {
 			if (hasRock) continue;
 
 			highestRock = j - 1;
-		}
-
-		if (i < 10) {
-			for (int j = 20; j >= 0; j--) {
-				for (int k = 0; k < RoomWidth; k++) {
-					std::cout<<(room[{k, j}] ? RockChar : AirChar);
-				}
-				std::cout<<std::endl;
-			}
-			std::cout<<std::endl;
+			break;
 		}
 	}
 
-	std::cout<<"Highest Rock: "<<highestRock<<std::endl;
+	std::cout<<"Highest Rock: "<<(highestRock + 1)<<std::endl;
 
 	return 0;
 }
