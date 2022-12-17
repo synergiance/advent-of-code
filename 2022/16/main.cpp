@@ -14,6 +14,7 @@ struct BoardState {
 	int maxReleased;
 	int maxPotential;
 	int worstTime;
+	std::map<std::string, bool> roomStates;
 };
 
 struct ValveRoom {
@@ -21,6 +22,11 @@ struct ValveRoom {
 	int flowRate;
 	std::vector<std::string> connected;
 	BoardState bestState;
+};
+
+struct Connection {
+	int distance;
+	std::string other;
 };
 
 const int gTotalTime = 30;
