@@ -160,6 +160,19 @@ namespace Syn {
 		newCoordinate += other;
 		return newCoordinate;
 	}
+
+	Coordinate3D &Coordinate3D::operator-=(const Coordinate3D &other) {
+		this->x -= other.x;
+		this->y -= other.y;
+		this->z -= other.z;
+		return *this;
+	}
+
+	Coordinate3D Coordinate3D::operator-(const Coordinate3D &other) const {
+		Coordinate3D newCoordinate = *this;
+		newCoordinate -= other;
+		return newCoordinate;
+	}
 } // Syn
 
 size_t std::hash<Syn::Coordinate>::operator()(const Syn::Coordinate &coordinate) const noexcept {

@@ -47,6 +47,8 @@ namespace Syn {
 		bool operator!=(const Coordinate3D &other) const;
 		Coordinate3D &operator+=(const Coordinate3D &other);
 		Coordinate3D operator+(const Coordinate3D &other) const;
+		Coordinate3D &operator-=(const Coordinate3D &other);
+		Coordinate3D operator-(const Coordinate3D &other) const;
 	};
 
 } // Syn
