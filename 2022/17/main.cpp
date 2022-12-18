@@ -8,9 +8,10 @@
 
 using namespace Syn;
 
-const int NumRocksFalling = 2022;
+const long NumRocksFalling = 1000000000000;
 const int MaxRockDimension = 4;
 const int RoomWidth = 7;
+const int MaxRoomHeight = 0x4000000;
 
 const char RockChar = '#';
 const char AirChar = '.';
@@ -46,6 +47,18 @@ void ApplyStone(Coordinate &coordinate, Grid<bool> &currentRock, Grid<bool> &roo
 	for (int x = 0; x < MaxRockDimension; x++)
 		for (int y = 0; y < MaxRockDimension; y++)
 			room[coordinate + Coordinate{x, y}] |= currentRock[{x, y}];
+}
+
+int GetLowestColumnHeight(Grid<bool> &room) {
+	int lowest = MaxRoomHeight;
+	for (int x = 0; x < RoomWidth; x++) {
+		for (int y = MaxRoomHeight - 1; y >= 0; y--) {
+			if (!room[{x, y}]) continue;
+			if (y + 1 < lowest) lowest = y + 1;
+			break;
+		}
+	}
+	return lowest;
 }
 
 int main() {
@@ -92,11 +105,15 @@ int main() {
 	Reader::getline(iFile, windStr);
 	iFile.close();
 
-	Grid<bool> room(RoomWidth, NumRocksFalling * MaxRockDimension);
+	long totalRoomHeight = NumRocksFalling * MaxRockDimension;
+	long roomOffset = 0;
+	int roomHeight = (totalRoomHeight > (long)MaxRoomHeight) ? MaxRoomHeight : (int)totalRoomHeight;
+
+	Grid<bool> room(RoomWidth, totalRoomHeight);
 	int highestRock = -1;
 	int currentWindIdx = 0;
 
-	for (int i = 0; i < NumRocksFalling; i++) {
+	for (long i = 0; i < NumRocksFalling; i++) {
 		Grid<bool> &currentRock = rockFormations[i % rockFormations.size()];
 		Coordinate rockLocation = Coordinate{0, highestRock} + RockOffset;
 

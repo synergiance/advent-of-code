@@ -16,7 +16,6 @@ namespace Syn {
 		~Grid();
 
 		T &operator[](Coordinate location);
-		T &at(Coordinate location);
 		int GetWidth();
 		int GetHeight();
 
@@ -211,11 +210,6 @@ namespace Syn {
 
 	template<typename T>
 	T &Grid<T>::operator[](Coordinate location) {
-		return at(location);
-	}
-
-	template<typename T>
-	T &Grid<T>::at(Coordinate location) {
 		return mpData[calcIndex(location)];
 	}
 
