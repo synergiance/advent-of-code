@@ -35,11 +35,29 @@ namespace Syn {
 		Coordinate operator%(const Coordinate &other) const;
 	};
 
+	struct Coordinate3D {
+		int x;
+		int y;
+		int z;
+
+		[[nodiscard]] static Coordinate3D Parse(const char *input, size_t len = 0x20);
+
+		size_t operator()(const Coordinate3D &coordinate) const noexcept;
+		bool operator==(const Coordinate3D &other) const;
+		bool operator!=(const Coordinate3D &other) const;
+		Coordinate3D &operator+=(const Coordinate3D &other);
+		Coordinate3D operator+(const Coordinate3D &other) const;
+	};
+
 } // Syn
 
 namespace std {
 	template<> struct hash<Syn::Coordinate> {
 		size_t operator()(const Syn::Coordinate &coordinate) const noexcept;
+	};
+
+	template<> struct hash<Syn::Coordinate3D> {
+		size_t operator()(const Syn::Coordinate3D &coordinate) const noexcept;
 	};
 
 	template<> struct less<Syn::Coordinate> {

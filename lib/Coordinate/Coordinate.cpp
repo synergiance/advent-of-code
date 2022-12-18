@@ -120,8 +120,52 @@ namespace Syn {
 		newCoordinate %= other;
 		return newCoordinate;
 	}
+
+	Coordinate3D Coordinate3D::Parse(const char *input, size_t len) {
+		Coordinate3D newCoordinate{};
+		int i;
+		newCoordinate.x = atoi(input);
+		for (i = 0; i < len; i++)
+			if (input[i] == ',') break;
+		i++;
+		newCoordinate.y = atoi(input+i);
+		for (; i < len; i++)
+			if (input[i] == ',') break;
+		i++;
+		newCoordinate.z = atoi(input+i);
+		return newCoordinate;
+	}
+
+	size_t Coordinate3D::operator()(const Coordinate3D &coordinate) const noexcept {
+		return ((coordinate.x << 8) ^ (coordinate.y << 4) ^ (coordinate.z));
+	}
+
+	bool Coordinate3D::operator==(const Coordinate3D &other) const {
+		return x == other.x && y == other.y && z == other.z;
+	}
+
+	bool Coordinate3D::operator!=(const Coordinate3D &other) const {
+		return x != other.x || y != other.y || z != other.z;
+	}
+
+	Coordinate3D &Coordinate3D::operator+=(const Coordinate3D &other) {
+		this->x += other.x;
+		this->y += other.y;
+		this->z += other.z;
+		return *this;
+	}
+
+	Coordinate3D Coordinate3D::operator+(const Coordinate3D &other) const {
+		Coordinate3D newCoordinate = *this;
+		newCoordinate += other;
+		return newCoordinate;
+	}
 } // Syn
 
 size_t std::hash<Syn::Coordinate>::operator()(const Syn::Coordinate &coordinate) const noexcept {
+	return coordinate(coordinate);
+}
+
+size_t std::hash<Syn::Coordinate3D>::operator()(const Syn::Coordinate3D &coordinate) const noexcept {
 	return coordinate(coordinate);
 }
