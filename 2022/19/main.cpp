@@ -4,6 +4,7 @@
 #include <vector>
 #include <Parser.h>
 #include <Reader.h>
+#include <map>
 
 using namespace Syn;
 
@@ -28,7 +29,56 @@ struct GameState {
 	int numClay;
 	int numObsidian;
 	int numGeode;
+
+	int timeLeft;
+
+	size_t operator()(const GameState &gameState) const noexcept {
+		size_t val = gameState.numOreRobots << 5;
+		val ^= gameState.numClayRobots << 9;
+		val ^= gameState.numObsidianRobots << 13;
+		val ^= gameState.numGeodeRobots << 17;
+		val ^= gameState.numOre << 8;
+		val ^= gameState.numClay << 12;
+		val ^= gameState.numObsidian << 16;
+		val ^= gameState.numGeode << 20;
+		val ^= gameState.timeLeft << 25;
+		return val;
+	}
+
+	bool operator==(const GameState &other) const {
+		return numOreRobots == other.numOreRobots &&
+		       numClayRobots == other.numClayRobots &&
+		       numObsidianRobots == other.numObsidianRobots &&
+		       numGeodeRobots == other.numGeodeRobots &&
+		       numOre == other.numOre &&
+		       numClay == other.numClay &&
+		       numObsidian == other.numObsidian &&
+		       numGeode == other.numGeode &&
+		       timeLeft == other.timeLeft;
+	}
+
+	bool operator!=(const GameState &other) const {
+		return numOreRobots != other.numOreRobots ||
+		       numClayRobots != other.numClayRobots ||
+		       numObsidianRobots != other.numObsidianRobots ||
+		       numGeodeRobots != other.numGeodeRobots ||
+		       numOre != other.numOre ||
+		       numClay != other.numClay ||
+		       numObsidian != other.numObsidian ||
+		       numGeode != other.numGeode ||
+		       timeLeft != other.timeLeft;
+	}
 };
+
+namespace std {
+	template <> struct less<GameState> {
+		bool operator()(const GameState &lhs, const GameState &rhs) const {
+			return lhs(lhs) < rhs(rhs);
+		}
+	};
+}
+
+std::map<GameState, GameState> endStates;
 
 Blueprint ParseBlueprint(const std::string &input) {
 	std::vector<std::string> tokens;
@@ -48,6 +98,7 @@ void ApplyGameState(GameState &gameState) {
 	gameState.numClay += gameState.numClayRobots;
 	gameState.numObsidian += gameState.numObsidianRobots;
 	gameState.numGeode += gameState.numGeodeRobots;
+	gameState.timeLeft--;
 }
 
 void PrintState(GameState &gameState) {
@@ -56,23 +107,25 @@ void PrintState(GameState &gameState) {
 	std::cout<<"), Geodes: ("<<gameState.numGeode<<", "<<gameState.numGeodeRobots<<")"<<std::endl;
 }
 
-GameState GetMaxGeodes(const Blueprint &blueprint, int timeLeft, GameState gameState) {
-	if (timeLeft == 0) {
+GameState GetMaxGeodes(const Blueprint &blueprint, const GameState &gameState) {
+	if (gameState.timeLeft == 0) {
 		return gameState;
 	}
+
+	if (endStates.contains(gameState)) return endStates[gameState];
 
 	GameState newGameState = gameState;
 	GameState bestState = {
 			0,0,0,0,0,0,0,0
 	};
 
-	if (timeLeft == 1 && gameState.numGeodeRobots == 0)
+	if (gameState.timeLeft == 1 && gameState.numGeodeRobots == 0)
 		return bestState;
 
-	if (timeLeft == 2 && gameState.numObsidianRobots == 0)
+	if (gameState.timeLeft == 2 && gameState.numObsidianRobots == 0)
 		return bestState;
 
-	if (timeLeft == 3 && gameState.numClayRobots == 0)
+	if (gameState.timeLeft == 3 && gameState.numClayRobots == 0)
 		return bestState;
 
 	bool canDoEverything = true;
@@ -84,7 +137,7 @@ GameState GetMaxGeodes(const Blueprint &blueprint, int timeLeft, GameState gameS
 		newGameState.numObsidian -= blueprint.geodeRobotCostObsidian;
 		ApplyGameState(newGameState);
 		newGameState.numGeodeRobots++;
-		GameState potentialState = GetMaxGeodes(blueprint, timeLeft - 1, newGameState);
+		GameState potentialState = GetMaxGeodes(blueprint, newGameState);
 		if (potentialState.numGeode > bestState.numGeode) bestState = potentialState;
 		newGameState = gameState;
 	} else {
@@ -98,7 +151,7 @@ GameState GetMaxGeodes(const Blueprint &blueprint, int timeLeft, GameState gameS
 			newGameState.numClay -= blueprint.obsidianRobotCostClay;
 			ApplyGameState(newGameState);
 			newGameState.numObsidianRobots++;
-			GameState potentialState = GetMaxGeodes(blueprint, timeLeft - 1, newGameState);
+			GameState potentialState = GetMaxGeodes(blueprint, newGameState);
 			if (potentialState.numGeode > bestState.numGeode) bestState = potentialState;
 			newGameState = gameState;
 		}
@@ -111,7 +164,7 @@ GameState GetMaxGeodes(const Blueprint &blueprint, int timeLeft, GameState gameS
 			newGameState.numOre -= blueprint.clayRobotCost;
 			ApplyGameState(newGameState);
 			newGameState.numClayRobots++;
-			GameState potentialState = GetMaxGeodes(blueprint, timeLeft - 1, newGameState);
+			GameState potentialState = GetMaxGeodes(blueprint, newGameState);
 			if (potentialState.numGeode > bestState.numGeode) bestState = potentialState;
 			newGameState = gameState;
 		}
@@ -124,7 +177,7 @@ GameState GetMaxGeodes(const Blueprint &blueprint, int timeLeft, GameState gameS
 			newGameState.numOre -= blueprint.oreRobotCost;
 			ApplyGameState(newGameState);
 			newGameState.numOreRobots++;
-			GameState potentialState = GetMaxGeodes(blueprint, timeLeft - 1, newGameState);
+			GameState potentialState = GetMaxGeodes(blueprint, newGameState);
 			if (potentialState.numGeode > bestState.numGeode) bestState = potentialState;
 			newGameState = gameState;
 		}
@@ -134,9 +187,11 @@ GameState GetMaxGeodes(const Blueprint &blueprint, int timeLeft, GameState gameS
 
 	if (!canDoEverything) {
 		ApplyGameState(newGameState);
-		GameState potentialState = GetMaxGeodes(blueprint, timeLeft - 1, newGameState);
+		GameState potentialState = GetMaxGeodes(blueprint, newGameState);
 		if (potentialState.numGeode > bestState.numGeode) bestState = potentialState;
 	}
+
+	endStates.insert({gameState, bestState});
 
 	return bestState;
 }
@@ -165,14 +220,15 @@ int main() {
 	std::cout<<"Imported "<<blueprints.size()<<" blueprints."<<std::endl;
 
 	static GameState initialState = {
-			1, 0, 0, 0, 0, 0, 0, 0
+			1, 0, 0, 0, 0, 0, 0, 0, TIME_TO_WORK
 	};
 
-	int geodeMultiplier = 0;
+	int geodeMultiplier = 1;
 
 	for (int i = 0; i < blueprints.size(); i++) {
+		endStates.clear();
 		std::cout<<"Testing blueprint "<<(i+1)<<"..."<<std::endl;
-		GameState bestState = GetMaxGeodes(blueprints[i], TIME_TO_WORK, initialState);
+		GameState bestState = GetMaxGeodes(blueprints[i], initialState);
 		geodeMultiplier *= bestState.numGeode;
 		std::cout<<"Blueprint "<<(i+1)<<" yields "<<bestState.numGeode<<" geodes."<<std::endl;
 		std::cout<<"Final state of blueprint:"<<std::endl;
