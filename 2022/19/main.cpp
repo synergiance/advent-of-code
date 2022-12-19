@@ -4,7 +4,7 @@
 #include <vector>
 #include <Parser.h>
 #include <Reader.h>
-#include <map>
+#include <unordered_map>
 
 using namespace Syn;
 
@@ -73,12 +73,32 @@ struct GameState {
 namespace std {
 	template <> struct less<GameState> {
 		bool operator()(const GameState &lhs, const GameState &rhs) const {
-			return lhs(lhs) < rhs(rhs);
+			size_t leftResource = lhs.numGeode * 50 + lhs.numObsidian * 30 + lhs.numClay * 17 + lhs.numOre * 7;
+			size_t rightResource = rhs.numGeode * 50 + rhs.numObsidian * 30 + rhs.numClay * 17 + rhs.numOre * 7;
+			size_t leftRobot = lhs.numGeodeRobots * 45 + lhs.numObsidianRobots * 35 + lhs.numClayRobots * 22 + lhs.numOreRobots * 13;
+			size_t rightRobot = rhs.numGeodeRobots * 45 + rhs.numObsidianRobots * 35 + rhs.numClayRobots * 22 + rhs.numOreRobots * 13;
+			size_t lhsInt = leftResource + leftRobot + lhs.timeLeft * 3;
+			size_t rhsInt = rightResource + rightRobot + rhs.timeLeft * 3;
+			return lhsInt < rhsInt;
+		}
+	};
+
+	template <> struct hash<GameState> {
+		size_t operator()(const GameState &item) const {
+			size_t resourceHash = ((hash<int>()(item.numOre)
+					^ (hash<int>()(item.numClay) << 1)) >> 1)
+					^ (hash<int>()(item.numObsidian) << 1)
+					^ (hash<int>()(item.numGeode) << 2);
+			size_t robotHash = ((hash<int>()(item.numOreRobots)
+					^ (hash<int>()(item.numClayRobots) << 1)) >> 1)
+					^ (hash<int>()(item.numObsidianRobots) << 1)
+					^ (hash<int>()(item.numGeodeRobots) << 2);
+			return (resourceHash << 4) ^ (robotHash) ^ (hash<int>()(item.timeLeft) >> 2);
 		}
 	};
 }
 
-std::map<GameState, GameState> endStates;
+std::unordered_map<GameState, GameState> endStateMap;
 
 Blueprint ParseBlueprint(const std::string &input) {
 	std::vector<std::string> tokens;
@@ -112,7 +132,7 @@ GameState GetMaxGeodes(const Blueprint &blueprint, const GameState &gameState) {
 		return gameState;
 	}
 
-	if (endStates.contains(gameState)) return endStates[gameState];
+	if (endStateMap.contains(gameState)) return endStateMap[gameState];
 
 	GameState newGameState = gameState;
 	GameState bestState = {
@@ -191,7 +211,7 @@ GameState GetMaxGeodes(const Blueprint &blueprint, const GameState &gameState) {
 		if (potentialState.numGeode > bestState.numGeode) bestState = potentialState;
 	}
 
-	endStates.insert({gameState, bestState});
+	endStateMap[gameState] = bestState;
 
 	return bestState;
 }
@@ -226,7 +246,7 @@ int main() {
 	int geodeMultiplier = 1;
 
 	for (int i = 0; i < blueprints.size(); i++) {
-		endStates.clear();
+		endStateMap.clear();
 		std::cout<<"Testing blueprint "<<(i+1)<<"..."<<std::endl;
 		GameState bestState = GetMaxGeodes(blueprints[i], initialState);
 		geodeMultiplier *= bestState.numGeode;
