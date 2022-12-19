@@ -43,6 +43,13 @@ Blueprint ParseBlueprint(const std::string &input) {
 	return newBlueprint;
 }
 
+void ApplyGameState(GameState &gameState) {
+	gameState.numOre += gameState.numOreRobots;
+	gameState.numClay += gameState.numClayRobots;
+	gameState.numObsidian += gameState.numObsidianRobots;
+	gameState.numGeode += gameState.numGeodeRobots;
+}
+
 int GetMaxGeodes(const Blueprint &blueprint, int timeLeft, GameState gameState) {
 	if (timeLeft == 0) {
 		if (gameState.numGeode > 0) {
@@ -53,14 +60,6 @@ int GetMaxGeodes(const Blueprint &blueprint, int timeLeft, GameState gameState) 
 		return gameState.numGeode;
 	}
 
-	if (timeLeft == 1 && gameState.numGeodeRobots == 0)
-		return 0;
-
-	gameState.numOre += gameState.numOreRobots;
-	gameState.numClay += gameState.numClayRobots;
-	gameState.numObsidian += gameState.numObsidianRobots;
-	gameState.numGeode += gameState.numGeodeRobots;
-
 	GameState newGameState = gameState;
 	int maxGeodes = 0;
 
@@ -68,9 +67,10 @@ int GetMaxGeodes(const Blueprint &blueprint, int timeLeft, GameState gameState) 
 	bool noMoreTests = false;
 
 	if (gameState.numOre >= blueprint.geodeRobotCostOre && gameState.numObsidian >= blueprint.geodeRobotCostObsidian) {
-		if (gameState.numGeodeRobots == 0) noMoreTests = true;
+		noMoreTests = true;
 		newGameState.numOre -= blueprint.geodeRobotCostOre;
 		newGameState.numObsidian -= blueprint.geodeRobotCostObsidian;
+		ApplyGameState(newGameState);
 		newGameState.numGeodeRobots++;
 		int newMax = GetMaxGeodes(blueprint, timeLeft - 1, newGameState);
 		if (newMax > maxGeodes) maxGeodes = newMax;
@@ -80,9 +80,10 @@ int GetMaxGeodes(const Blueprint &blueprint, int timeLeft, GameState gameState) 
 	}
 
 	if (!noMoreTests && gameState.numOre >= blueprint.obsidianRobotCostOre && gameState.numClay >= blueprint.obsidianRobotCostClay) {
-		if (gameState.numObsidianRobots == 0) noMoreTests = true;
+		noMoreTests = true;
 		newGameState.numOre -= blueprint.obsidianRobotCostOre;
 		newGameState.numClay -= blueprint.obsidianRobotCostClay;
+		ApplyGameState(newGameState);
 		newGameState.numObsidianRobots++;
 		int newMax = GetMaxGeodes(blueprint, timeLeft - 1, newGameState);
 		if (newMax > maxGeodes) maxGeodes = newMax;
@@ -92,8 +93,9 @@ int GetMaxGeodes(const Blueprint &blueprint, int timeLeft, GameState gameState) 
 	}
 
 	if (!noMoreTests && gameState.numOre >= blueprint.clayRobotCost) {
-		if (gameState.numClayRobots == 0) noMoreTests = true;
+		noMoreTests = true;
 		newGameState.numOre -= blueprint.clayRobotCost;
+		ApplyGameState(newGameState);
 		newGameState.numClayRobots++;
 		int newMax = GetMaxGeodes(blueprint, timeLeft - 1, newGameState);
 		if (newMax > maxGeodes) maxGeodes = newMax;
@@ -104,6 +106,7 @@ int GetMaxGeodes(const Blueprint &blueprint, int timeLeft, GameState gameState) 
 
 	if (!noMoreTests && gameState.numOre >= blueprint.oreRobotCost) {
 		newGameState.numOre -= blueprint.oreRobotCost;
+		ApplyGameState(newGameState);
 		newGameState.numOreRobots++;
 		int newMax = GetMaxGeodes(blueprint, timeLeft - 1, newGameState);
 		if (newMax > maxGeodes) maxGeodes = newMax;
@@ -113,6 +116,7 @@ int GetMaxGeodes(const Blueprint &blueprint, int timeLeft, GameState gameState) 
 	}
 
 	if (!noMoreTests && !canDoEverything) {
+		ApplyGameState(newGameState);
 		int newMax = GetMaxGeodes(blueprint, timeLeft - 1, newGameState);
 		if (newMax > maxGeodes) maxGeodes = newMax;
 	}
@@ -121,7 +125,7 @@ int GetMaxGeodes(const Blueprint &blueprint, int timeLeft, GameState gameState) 
 }
 
 int main() {
-	std::ifstream iFile("blueprints.dat");
+	std::ifstream iFile("test.dat");
 	if (!iFile.is_open()) {
 		std::cout<<"Could not open file!"<<std::endl;
 		return 1;
