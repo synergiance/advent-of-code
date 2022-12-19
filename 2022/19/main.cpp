@@ -79,43 +79,49 @@ int GetMaxGeodes(const Blueprint &blueprint, int timeLeft, GameState gameState) 
 		canDoEverything = false;
 	}
 
-	if (!noMoreTests && gameState.numOre >= blueprint.obsidianRobotCostOre && gameState.numClay >= blueprint.obsidianRobotCostClay) {
-		noMoreTests = true;
-		newGameState.numOre -= blueprint.obsidianRobotCostOre;
-		newGameState.numClay -= blueprint.obsidianRobotCostClay;
-		ApplyGameState(newGameState);
-		newGameState.numObsidianRobots++;
-		int newMax = GetMaxGeodes(blueprint, timeLeft - 1, newGameState);
-		if (newMax > maxGeodes) maxGeodes = newMax;
-		newGameState = gameState;
+	if (gameState.numOre >= blueprint.obsidianRobotCostOre && gameState.numClay >= blueprint.obsidianRobotCostClay) {
+		if (!noMoreTests) {
+			noMoreTests = true;
+			newGameState.numOre -= blueprint.obsidianRobotCostOre;
+			newGameState.numClay -= blueprint.obsidianRobotCostClay;
+			ApplyGameState(newGameState);
+			newGameState.numObsidianRobots++;
+			int newMax = GetMaxGeodes(blueprint, timeLeft - 1, newGameState);
+			if (newMax > maxGeodes) maxGeodes = newMax;
+			newGameState = gameState;
+		}
 	} else {
 		canDoEverything = false;
 	}
 
-	if (!noMoreTests && gameState.numOre >= blueprint.clayRobotCost) {
-		noMoreTests = true;
-		newGameState.numOre -= blueprint.clayRobotCost;
-		ApplyGameState(newGameState);
-		newGameState.numClayRobots++;
-		int newMax = GetMaxGeodes(blueprint, timeLeft - 1, newGameState);
-		if (newMax > maxGeodes) maxGeodes = newMax;
-		newGameState = gameState;
+	if (gameState.numOre >= blueprint.clayRobotCost) {
+		if (!noMoreTests) {
+			noMoreTests = true;
+			newGameState.numOre -= blueprint.clayRobotCost;
+			ApplyGameState(newGameState);
+			newGameState.numClayRobots++;
+			int newMax = GetMaxGeodes(blueprint, timeLeft - 1, newGameState);
+			if (newMax > maxGeodes) maxGeodes = newMax;
+			newGameState = gameState;
+		}
 	} else {
 		canDoEverything = false;
 	}
 
-	if (!noMoreTests && gameState.numOre >= blueprint.oreRobotCost) {
-		newGameState.numOre -= blueprint.oreRobotCost;
-		ApplyGameState(newGameState);
-		newGameState.numOreRobots++;
-		int newMax = GetMaxGeodes(blueprint, timeLeft - 1, newGameState);
-		if (newMax > maxGeodes) maxGeodes = newMax;
-		newGameState = gameState;
+	if (gameState.numOre >= blueprint.oreRobotCost) {
+		if (!noMoreTests) {
+			newGameState.numOre -= blueprint.oreRobotCost;
+			ApplyGameState(newGameState);
+			newGameState.numOreRobots++;
+			int newMax = GetMaxGeodes(blueprint, timeLeft - 1, newGameState);
+			if (newMax > maxGeodes) maxGeodes = newMax;
+			newGameState = gameState;
+		}
 	} else {
 		canDoEverything = false;
 	}
 
-	if (!noMoreTests && !canDoEverything) {
+	if (!canDoEverything) {
 		ApplyGameState(newGameState);
 		int newMax = GetMaxGeodes(blueprint, timeLeft - 1, newGameState);
 		if (newMax > maxGeodes) maxGeodes = newMax;
