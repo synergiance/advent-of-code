@@ -133,7 +133,7 @@ GameState GetMaxGeodes(const Blueprint &blueprint, int timeLeft, GameState gameS
 }
 
 int main() {
-	std::ifstream iFile("test.dat");
+	std::ifstream iFile("blueprints.dat");
 	if (!iFile.is_open()) {
 		std::cout<<"Could not open file!"<<std::endl;
 		return 1;
