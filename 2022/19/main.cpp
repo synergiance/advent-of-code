@@ -7,7 +7,7 @@
 
 using namespace Syn;
 
-#define TIME_TO_WORK 24
+#define TIME_TO_WORK 32
 
 struct Blueprint {
 	int oreRobotCost;
@@ -65,6 +65,15 @@ GameState GetMaxGeodes(const Blueprint &blueprint, int timeLeft, GameState gameS
 	GameState bestState = {
 			0,0,0,0,0,0,0,0
 	};
+
+	if (timeLeft == 1 && gameState.numGeodeRobots == 0)
+		return bestState;
+
+	if (timeLeft == 2 && gameState.numObsidianRobots == 0)
+		return bestState;
+
+	if (timeLeft == 3 && gameState.numClayRobots == 0)
+		return bestState;
 
 	bool canDoEverything = true;
 	bool noMoreTests = false;
@@ -148,7 +157,10 @@ int main() {
 		if (buffer.empty()) continue;
 
 		blueprints.push_back(ParseBlueprint(buffer));
+		if (blueprints.size() == 3) break;
 	}
+
+	iFile.close();
 
 	std::cout<<"Imported "<<blueprints.size()<<" blueprints."<<std::endl;
 
@@ -156,21 +168,18 @@ int main() {
 			1, 0, 0, 0, 0, 0, 0, 0
 	};
 
-	int totalQuality = 0;
+	int geodeMultiplier = 0;
 
 	for (int i = 0; i < blueprints.size(); i++) {
 		std::cout<<"Testing blueprint "<<(i+1)<<"..."<<std::endl;
 		GameState bestState = GetMaxGeodes(blueprints[i], TIME_TO_WORK, initialState);
-		int blueprintQuality = bestState.numGeode * (i + 1);
-		totalQuality += blueprintQuality;
-		std::cout<<"Blueprint "<<(i+1)<<" yields "<<bestState.numGeode<<" geodes with quality level "<< blueprintQuality<<std::endl;
+		geodeMultiplier *= bestState.numGeode;
+		std::cout<<"Blueprint "<<(i+1)<<" yields "<<bestState.numGeode<<" geodes."<<std::endl;
 		std::cout<<"Final state of blueprint:"<<std::endl;
 		PrintState(bestState);
 		std::cout<<std::endl;
 	}
 
-	std::cout<<"Total quality level: "<<totalQuality<<std::endl;
-
-	iFile.close();
+	std::cout << "Geode Multiplier: " << geodeMultiplier << std::endl;
 	return 0;
 }
