@@ -17,6 +17,8 @@ struct Blueprint {
 	int obsidianRobotCostClay;
 	int geodeRobotCostOre;
 	int geodeRobotCostObsidian;
+	int maxOreCost;
+	int minOreCost;
 };
 
 struct GameState {
@@ -110,6 +112,13 @@ Blueprint ParseBlueprint(const std::string &input) {
 	newBlueprint.obsidianRobotCostClay = atoi(tokens[21].c_str());
 	newBlueprint.geodeRobotCostOre = atoi(tokens[27].c_str());
 	newBlueprint.geodeRobotCostObsidian = atoi(tokens[30].c_str());
+	newBlueprint.maxOreCost = newBlueprint.minOreCost = newBlueprint.oreRobotCost;
+	if (newBlueprint.clayRobotCost > newBlueprint.maxOreCost) newBlueprint.maxOreCost = newBlueprint.clayRobotCost;
+	if (newBlueprint.clayRobotCost < newBlueprint.minOreCost) newBlueprint.minOreCost = newBlueprint.clayRobotCost;
+	if (newBlueprint.obsidianRobotCostOre > newBlueprint.maxOreCost) newBlueprint.maxOreCost = newBlueprint.obsidianRobotCostOre;
+	if (newBlueprint.obsidianRobotCostOre < newBlueprint.minOreCost) newBlueprint.minOreCost = newBlueprint.obsidianRobotCostOre;
+	if (newBlueprint.geodeRobotCostOre > newBlueprint.maxOreCost) newBlueprint.maxOreCost = newBlueprint.geodeRobotCostOre;
+	if (newBlueprint.geodeRobotCostOre < newBlueprint.minOreCost) newBlueprint.minOreCost = newBlueprint.geodeRobotCostOre;
 	return newBlueprint;
 }
 
@@ -132,7 +141,7 @@ GameState GetMaxGeodes(const Blueprint &blueprint, const GameState &gameState) {
 		return gameState;
 	}
 
-	if (endStateMap.contains(gameState)) return endStateMap[gameState];
+	//if (endStateMap.contains(gameState)) return endStateMap[gameState];
 
 	GameState newGameState = gameState;
 	GameState bestState = {
@@ -165,7 +174,7 @@ GameState GetMaxGeodes(const Blueprint &blueprint, const GameState &gameState) {
 	}
 
 	if (gameState.numOre >= blueprint.obsidianRobotCostOre && gameState.numClay >= blueprint.obsidianRobotCostClay) {
-		if (!noMoreTests) {
+		if (!noMoreTests && gameState.numObsidianRobots < blueprint.geodeRobotCostObsidian) {
 			noMoreTests = true;
 			newGameState.numOre -= blueprint.obsidianRobotCostOre;
 			newGameState.numClay -= blueprint.obsidianRobotCostClay;
@@ -180,7 +189,7 @@ GameState GetMaxGeodes(const Blueprint &blueprint, const GameState &gameState) {
 	}
 
 	if (gameState.numOre >= blueprint.clayRobotCost) {
-		if (!noMoreTests) {
+		if (!noMoreTests && gameState.numClayRobots < blueprint.obsidianRobotCostClay) {
 			newGameState.numOre -= blueprint.clayRobotCost;
 			ApplyGameState(newGameState);
 			newGameState.numClayRobots++;
@@ -193,7 +202,7 @@ GameState GetMaxGeodes(const Blueprint &blueprint, const GameState &gameState) {
 	}
 
 	if (gameState.numOre >= blueprint.oreRobotCost) {
-		if (!noMoreTests) {
+		if (!noMoreTests && gameState.numOreRobots < blueprint.maxOreCost) {
 			newGameState.numOre -= blueprint.oreRobotCost;
 			ApplyGameState(newGameState);
 			newGameState.numOreRobots++;
@@ -211,7 +220,7 @@ GameState GetMaxGeodes(const Blueprint &blueprint, const GameState &gameState) {
 		if (potentialState.numGeode > bestState.numGeode) bestState = potentialState;
 	}
 
-	endStateMap[gameState] = bestState;
+	//endStateMap[gameState] = bestState;
 
 	return bestState;
 }
