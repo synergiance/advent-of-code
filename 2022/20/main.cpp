@@ -20,7 +20,7 @@ const int GroveCoordinates[] = {
 };
 
 int main() {
-	std::ifstream iFile("encrypted_coordinates.dat");
+	std::ifstream iFile("test.dat");
 	if (!iFile.is_open()) {
 		std::cout<<"Could not open file!"<<std::endl;
 		return 1;
@@ -77,8 +77,11 @@ int main() {
 	std::cout<<"Zero position: "<<zeroPos<<std::endl;
 
 	int coordinateSum = 0;
-	for (int position : GroveCoordinates)
-		coordinateSum += numbers[(position + zeroPos) % numbers.size()].value;
+	for (int position : GroveCoordinates) {
+		int val = numbers[(position + zeroPos) % numbers.size()].value;
+		std::cout<<"Value ("<<position<<"): "<<val<<std::endl;
+		coordinateSum += val;
+	}
 
 	std::cout<<"Coordinate sum: "<<coordinateSum<<std::endl;
 
