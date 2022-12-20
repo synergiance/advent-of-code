@@ -19,6 +19,16 @@ const int GroveCoordinates[] = {
 		3000
 };
 
+void RotateList(int distance, std::vector<MixerValue> &list) {
+	int newDistance = distance % (int)list.size();
+	if (newDistance < 0) newDistance += (int)list.size();
+
+	for (int i = 0; i < newDistance; i++) {
+		list.push_back(list.front());
+		list.erase(list.cbegin());
+	}
+}
+
 int main() {
 	std::ifstream iFile("test.dat");
 	if (!iFile.is_open()) {
@@ -59,6 +69,8 @@ int main() {
 		int negativeOffset = currentVal.value > 0 ? 1 : 0;
 		int oldPosition = currentPosition;
 
+		if (currentVal.value == 0)
+			numbers[currentPosition].hasMixed = true;
 		if (newPosition != oldPosition)
 			numbers.insert(numbers.cbegin() + newPosition + negativeOffset, currentVal);
 		if (newPosition <= oldPosition)
@@ -75,6 +87,11 @@ int main() {
 	}
 
 	std::cout<<"Zero position: "<<zeroPos<<std::endl;
+
+	int unmixedNumbers = 0;
+	for (auto & number : numbers)
+		if (!number.hasMixed) unmixedNumbers++;
+	std::cout<<"Unmixed numbers found: "<<unmixedNumbers<<std::endl;
 
 	int coordinateSum = 0;
 	for (int position : GroveCoordinates) {
