@@ -4,7 +4,8 @@
 #include <vector>
 #include <Parser.h>
 #include <Reader.h>
-#include <unordered_set>
+
+#include "MixerHelper.h"
 
 using namespace Syn;
 
@@ -30,7 +31,7 @@ void RotateList(int distance, std::vector<MixerValue> &list) {
 }
 
 int main() {
-	std::ifstream iFile("test.dat");
+	std::ifstream iFile("encrypted_coordinates.dat");
 	if (!iFile.is_open()) {
 		std::cout<<"Could not open file!"<<std::endl;
 		return 1;
@@ -40,12 +41,16 @@ int main() {
 	std::string buffer;
 
 	std::vector<MixerValue> numbers;
+	MixerHelper mixer;
+	MixerLink *zeroLink = nullptr;
 
 	while (Reader::getline(iFile, buffer)) {
 		if (buffer.empty()) continue;
 
 		int number = atoi(buffer.c_str());
 		numbers.push_back({number, false});
+		mixer.Add(number);
+		if (number == 0) zeroLink = mixer.LastAdded();
 	}
 
 	iFile.close();
@@ -79,6 +84,9 @@ int main() {
 			numbers.erase(numbers.cbegin() + currentPosition);
 	}
 
+	for (int i = 0; i < mixer.Length(); i++)
+		mixer.MoveLink(mixer.GetOriginalLinkAt(i), (*mixer.GetOriginalLinkAt(i)).value);
+
 	int zeroPos = -1;
 	for (int i = 0; i < numbers.size(); i++) {
 		if (numbers[i].value != 0) continue;
@@ -101,6 +109,18 @@ int main() {
 	}
 
 	std::cout<<"Coordinate sum: "<<coordinateSum<<std::endl;
+
+	coordinateSum = 0;
+	int currentPosOffset = 0;
+	MixerLink *currentLink = zeroLink;
+	for (int positionOffset : GroveCoordinates) {
+		currentLink = mixer.GetLinkOffset(currentLink, positionOffset - currentPosOffset);
+		coordinateSum += currentLink->value;
+		std::cout<<"Value ("<<positionOffset<<") (New method): "<<currentLink->value<<std::endl;
+		currentPosOffset = positionOffset;
+	}
+
+	std::cout<<"Coordinate sum (New method): "<<coordinateSum<<std::endl;
 
 	return 0;
 }
