@@ -61,6 +61,16 @@ int GetLowestColumnHeight(Grid<bool> &room) {
 	return lowest;
 }
 
+void ShiftDown(int distance, Grid<bool> &room) {
+	for (int i = 0; i < room.GetHeight() - distance; i++)
+		for (int j = 0; j < room.GetWidth(); j++)
+			room[{j, i}] = room[{j, i + distance}];
+
+	for (int i = room.GetHeight() - distance; i < room.GetHeight(); i++)
+		for (int j = 0; j < room.GetWidth(); j++)
+			room[{j, i}] = false;
+}
+
 int main() {
 	std::ifstream rockFile("rock_formations.dat");
 	if (!rockFile.is_open()) {
