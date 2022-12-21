@@ -7,7 +7,7 @@
 #include <vector>
 
 struct MixerLink {
-	int value;
+	long value;
 	MixerLink *prev;
 	MixerLink *next;
 };
@@ -15,9 +15,9 @@ struct MixerLink {
 class MixerHelper {
 public:
 	~MixerHelper();
-	void Add(int value);
-	void MoveLink(MixerLink *link, int distance);
-	MixerLink *GetLinkOffset(MixerLink *link, int distance) const;
+	void Add(long value);
+	void MoveLink(MixerLink *link, long distance);
+	MixerLink *GetLinkOffset(MixerLink *link, long distance) const;
 	void Print();
 	[[nodiscard]] size_t Length() const;
 	[[nodiscard]] MixerLink *First() const;

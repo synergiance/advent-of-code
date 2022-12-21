@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-void MixerHelper::Add(int value) {
+void MixerHelper::Add(long value) {
 	if (mpFirst == nullptr) {
 		mpFirst = new MixerLink { value };
 		mpFirst->prev = mpFirst->next = mpLastAdded = mpFirst;
@@ -21,7 +21,7 @@ void MixerHelper::Add(int value) {
 	mNumLinks++;
 }
 
-void MixerHelper::MoveLink(MixerLink *link, int distance) {
+void MixerHelper::MoveLink(MixerLink *link, long distance) {
 	std::cout<<"Move link "<<link->value<<" by "<<distance<<" locations."<<std::endl;
 	if (distance == 0) return;
 	link->next->prev = link->prev;
@@ -44,18 +44,18 @@ void MixerHelper::MoveLink(MixerLink *link, int distance) {
 	//Print();
 }
 
-MixerLink *MixerHelper::GetLinkOffset(MixerLink *link, int distance) const {
+MixerLink *MixerHelper::GetLinkOffset(MixerLink *link, long distance) const {
 	if (distance == 0) return link;
 	if (link == nullptr) return nullptr;
-	distance %= (int)mNumLinks;
-	if (distance < 0) for (int i = 0; i > distance; i--) link = link->prev;
-	else for (int i = 0; i < distance; i++) link = link->next;
+	distance %= (long)mNumLinks;
+	if (distance < 0) for (long i = 0; i > distance; i--) link = link->prev;
+	else for (long i = 0; i < distance; i++) link = link->next;
 	return link;
 }
 
 void MixerHelper::Print() {
 	MixerLink *pCurrentLink = mpFirst;
-	for (int i = 0; i < mNumLinks; i++) {
+	for (long i = 0; i < mNumLinks; i++) {
 		std::cout << pCurrentLink->value << ", ";
 		pCurrentLink = pCurrentLink->next;
 	}
