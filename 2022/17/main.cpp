@@ -13,6 +13,9 @@ const int MaxRockDimension = 4;
 const int RoomWidth = 7;
 const int MaxRoomHeight = 0x4000;
 
+const int Snapshot1CycleLocation = 2;
+const int Snapshot2CycleLocation = Snapshot1CycleLocation + 1;
+
 const char RockChar = '#';
 const char AirChar = '.';
 
@@ -100,7 +103,7 @@ int main() {
 		}
 	}
 
-	std::cout<<"Imported all rocks"<<std::endl;
+	std::cout<<"Imported "<<rockFormations.size()<<" rocks"<<std::endl;
 	rockFile.close();
 
 	std::ifstream iFile("wind_pattern.dat");
@@ -115,13 +118,33 @@ int main() {
 	Reader::getline(iFile, windStr);
 	iFile.close();
 
+	std::cout<<"Wind pattern loaded, size="<<windStr.size()<<std::endl;
+
 	long totalRoomHeight = NumRocksFalling * MaxRockDimension;
 	long roomOffset = 0;
 	int roomHeight = (totalRoomHeight > (long)MaxRoomHeight) ? MaxRoomHeight : (int)totalRoomHeight;
 
+	std::cout<<"Total room height: "<<totalRoomHeight<<std::endl;
+	std::cout<<"Room instance height: "<<roomHeight<<std::endl;
+
 	Grid<bool> room(RoomWidth, roomHeight);
+	room.Fill(false);
 	int highestRock = -1;
 	int currentWindIdx = 0;
+
+	std::cout<<"Room created!"<<std::endl;
+
+	long patternSz = (long)(rockFormations.size() * windStr.size());
+	long snapshot1Location = patternSz * Snapshot1CycleLocation;
+	long snapshot2Location = patternSz * Snapshot2CycleLocation;
+	long differenceMultiplier = NumRocksFalling / patternSz - Snapshot2CycleLocation;
+
+	std::cout<<"Pattern size: "<<patternSz<<std::endl;
+	std::cout<<"Snapshot Locations: 1: "<<snapshot1Location<<", 2: "<<snapshot2Location<<std::endl;
+	std::cout<<"Difference Multiplier: "<<differenceMultiplier<<std::endl;
+
+	long snapshot1;
+	long snapshot2;
 
 	for (long i = 0; i < NumRocksFalling; i++) {
 		Grid<bool> &currentRock = rockFormations[i % rockFormations.size()];
@@ -155,9 +178,31 @@ int main() {
 			roomOffset += addedOffset;
 			highestRock -= addedOffset;
 		}
+
+		if (i == snapshot1Location) {
+			snapshot1 = highestRock + roomOffset;
+			std::cout<<"Snapshot 1: "<<snapshot1<<std::endl;
+			std::cout<<"Highest Rock: "<<highestRock<<", Room Offset: "<<roomOffset<<std::endl;
+			std::cout<<"I: "<<i<<std::endl;
+		}
+
+		if (i == snapshot2Location) {
+			snapshot2 = highestRock + roomOffset;
+			std::cout<<"Snapshot 2: "<<snapshot2<<std::endl;
+			std::cout<<"Highest Rock: "<<highestRock<<", Room Offset: "<<roomOffset<<std::endl;
+			std::cout<<"I: "<<i<<std::endl;
+			long difference = snapshot2 - snapshot1;
+			std::cout<<"Difference: "<<difference<<std::endl;
+			std::cout<<"Index increased from "<<i;
+			i += patternSz * differenceMultiplier;
+			std::cout<<" to "<<i<<std::endl;
+			std::cout<<"Room offset increased from "<<roomOffset;
+			roomOffset += difference * differenceMultiplier;
+			std::cout<<" to "<<roomOffset<<std::endl;
+		}
 	}
 
-	std::cout<<"Highest Rock: "<<(highestRock + roomOffset + 1)<<std::endl;
+	std::cout<<"Highest Rock: "<<((long)highestRock + roomOffset + 1)<<std::endl;
 
 	return 0;
 }
