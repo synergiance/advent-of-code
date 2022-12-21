@@ -15,7 +15,7 @@ enum MathOp {
 struct Monkey {
 	std::string name;
 	MathOp op;
-	int num;
+	long num;
 	std::string lhs;
 	std::string rhs;
 };
@@ -54,13 +54,13 @@ Monkey ParseMonkey(const std::string &input) {
 	return monkey;
 }
 
-int GetVal(const std::string &name, std::unordered_map<std::string, Monkey> &monkeys) {
+long GetVal(const std::string &name, std::unordered_map<std::string, Monkey> &monkeys) {
 	Monkey &currentMonkey = monkeys[name];
 	if (currentMonkey.op == none)
 		return currentMonkey.num;
 
-	int lhs = GetVal(currentMonkey.lhs, monkeys);
-	int rhs = GetVal(currentMonkey.rhs, monkeys);
+	long lhs = GetVal(currentMonkey.lhs, monkeys);
+	long rhs = GetVal(currentMonkey.rhs, monkeys);
 
 	switch (currentMonkey.op) {
 		case add:
