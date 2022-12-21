@@ -109,7 +109,7 @@ int main() {
 	long roomOffset = 0;
 	int roomHeight = (totalRoomHeight > (long)MaxRoomHeight) ? MaxRoomHeight : (int)totalRoomHeight;
 
-	Grid<bool> room(RoomWidth, totalRoomHeight);
+	Grid<bool> room(RoomWidth, roomHeight);
 	int highestRock = -1;
 	int currentWindIdx = 0;
 
@@ -124,16 +124,6 @@ int main() {
 		} while (AttemptMove(rockLocation, DownDirection, currentRock, room));
 
 		ApplyStone(rockLocation, currentRock, room);
-
-		if (i < 10) {
-			for (int j = 20; j >= 0; j--) {
-				for (int k = 0; k < RoomWidth; k++) {
-					std::cout<<(room[{k, j}] ? RockChar : AirChar);
-				}
-				std::cout<<std::endl;
-			}
-			std::cout<<std::endl;
-		}
 
 		for (int j = highestRock + 1; j < rockLocation.y + MaxRockDimension + 1; j++) {
 			bool hasRock = false;
