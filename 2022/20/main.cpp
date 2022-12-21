@@ -43,7 +43,7 @@ int main() {
 
 	std::cout<<"Loaded "<<mixer.Length()<<" numbers."<<std::endl;
 
-	for (int j = 0; j < 10; j++) for (long i = 0; i < mixer.Length(); i++)
+	for (int j = 0; j < gTimesToMix; j++) for (long i = 0; i < mixer.Length(); i++)
 		mixer.MoveLink(mixer.GetOriginalLinkAt(i), (*mixer.GetOriginalLinkAt(i)).value);
 
 	long coordinateSum = 0;
@@ -52,11 +52,11 @@ int main() {
 	for (long positionOffset : gGroveCoordinates) {
 		currentLink = mixer.GetLinkOffset(currentLink, positionOffset - currentPosOffset);
 		coordinateSum += currentLink->value;
-		std::cout<<"Value ("<<positionOffset<<") (New method): "<<currentLink->value<<std::endl;
+		std::cout<<"Value ("<<positionOffset<<"): "<<currentLink->value<<std::endl;
 		currentPosOffset = positionOffset;
 	}
 
-	std::cout<<"Coordinate sum (New method): "<<coordinateSum<<std::endl;
+	std::cout<<"Coordinate sum: "<<coordinateSum<<std::endl;
 
 	return 0;
 }

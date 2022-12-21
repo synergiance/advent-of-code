@@ -11,18 +11,15 @@ void MixerHelper::Add(long value) {
 		mpFirst = new MixerLink { value };
 		mpFirst->prev = mpFirst->next = mpLastAdded = mpFirst;
 		mOriginalOrder.push_back(mpFirst);
-		std::cout<<"Inserting first value: "<<value<<std::endl;
 	} else {
 		mpLastAdded->next = new MixerLink {value, mpLastAdded, mpFirst };
 		mpFirst->prev = mpLastAdded = mpLastAdded->next;
 		mOriginalOrder.push_back(mpLastAdded);
-		std::cout << "Inserting new value " << value << " between " << mpLastAdded->prev->value << " and " << mpFirst->value << std::endl;
 	}
 	mNumLinks++;
 }
 
 void MixerHelper::MoveLink(MixerLink *link, long distance) {
-	std::cout<<"Move link "<<link->value<<" by "<<distance<<" locations."<<std::endl;
 	if (distance == 0) return;
 	link->next->prev = link->prev;
 	link->prev->next = link->next;
@@ -40,8 +37,6 @@ void MixerHelper::MoveLink(MixerLink *link, long distance) {
 		link->next->prev = link;
 	}
 	mNumLinks++;
-	std::cout<<"Link is now between "<<link->prev->value<<" and "<<link->next->value<<std::endl;
-	//Print();
 }
 
 MixerLink *MixerHelper::GetLinkOffset(MixerLink *link, long distance) const {
