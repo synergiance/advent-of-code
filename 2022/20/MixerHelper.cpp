@@ -24,10 +24,10 @@ void MixerHelper::Add(int value) {
 void MixerHelper::MoveLink(MixerLink *link, int distance) {
 	std::cout<<"Move link "<<link->value<<" by "<<distance<<" locations."<<std::endl;
 	if (distance == 0) return;
-	MixerLink *refLink = GetLinkOffset(link, distance);
-	if (refLink == nullptr) return;
 	link->next->prev = link->prev;
 	link->prev->next = link->next;
+	mNumLinks--;
+	MixerLink *refLink = GetLinkOffset(link, distance);
 	if (distance < 0) {
 		link->prev = refLink->prev;
 		link->next = refLink;
@@ -39,6 +39,7 @@ void MixerHelper::MoveLink(MixerLink *link, int distance) {
 		refLink->next = link;
 		link->next->prev = link;
 	}
+	mNumLinks++;
 	std::cout<<"Link is now between "<<link->prev->value<<" and "<<link->next->value<<std::endl;
 	//Print();
 }
