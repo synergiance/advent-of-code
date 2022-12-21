@@ -11,7 +11,7 @@ using namespace Syn;
 const long NumRocksFalling = 1000000000000;
 const int MaxRockDimension = 4;
 const int RoomWidth = 7;
-const int MaxRoomHeight = 0x4000000;
+const int MaxRoomHeight = 0x4000;
 
 const char RockChar = '#';
 const char AirChar = '.';
@@ -148,9 +148,16 @@ int main() {
 			highestRock = j - 1;
 			break;
 		}
+
+		if (highestRock >= roomHeight - MaxRockDimension) {
+			int addedOffset = GetLowestColumnHeight(room);
+			ShiftDown(addedOffset, room);
+			roomOffset += addedOffset;
+			highestRock -= addedOffset;
+		}
 	}
 
-	std::cout<<"Highest Rock: "<<(highestRock + 1)<<std::endl;
+	std::cout<<"Highest Rock: "<<(highestRock + roomOffset + 1)<<std::endl;
 
 	return 0;
 }
