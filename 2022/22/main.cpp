@@ -4,6 +4,7 @@
 #include <vector>
 #include <Parser.h>
 #include <Reader.h>
+#include <Grid.h>
 
 using namespace Syn;
 
