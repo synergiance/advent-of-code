@@ -13,7 +13,7 @@ const int MaxRockDimension = 4;
 const int RoomWidth = 7;
 const int MaxRoomHeight = 0x4000;
 
-const int Snapshot1CycleLocation = 2;
+const int Snapshot1CycleLocation = 4;
 const int Snapshot2CycleLocation = Snapshot1CycleLocation + 1;
 
 const char RockChar = '#';
@@ -172,7 +172,7 @@ int main() {
 			break;
 		}
 
-		if (highestRock >= roomHeight - MaxRockDimension) {
+		if (highestRock >= roomHeight - MaxRockDimension * 2) {
 			int addedOffset = GetLowestColumnHeight(room);
 			ShiftDown(addedOffset, room);
 			roomOffset += addedOffset;
