@@ -130,7 +130,7 @@ Coordinate GetCubeOrigin(int cubeIdx) {
 		std::cerr<<"Index out of bounds! "<<cubeIdx<<std::endl;
 	return {
 		(cubeIdx % 3) * gCubeSize,
-		cubeIdx * gCubeSize / 3
+		(cubeIdx / 3) * gCubeSize
 	};
 }
 
@@ -251,9 +251,11 @@ int main() {
 				switch (potentialDirection) {
 					case 0:
 						cubeOffset.y = posOnEdge;
+						cubeOffset.x = 0;
 						break;
 					case 1:
 						cubeOffset.x = gCubeSize - posOnEdge - 1;
+						cubeOffset.y = 0;
 						break;
 					case 2:
 						cubeOffset.y = gCubeSize - posOnEdge - 1;
@@ -264,10 +266,14 @@ int main() {
 						cubeOffset.y = gCubeSize - 1;
 						break;
 					default:
+						cubeOffset.x = cubeOffset.y = 0;
 						break;
 				}
 
 				potentialPosition = GetCubeOrigin(nextCubeIdx) + cubeOffset;
+				std::cout<<"Potentially passing from cube "<<cubeIdx<<" to cube "<<nextCubeIdx<<std::endl;
+				std::cout<<"with old coordinate ("<<currentPosition.x+1<<", "<<currentPosition.y+1;
+				std::cout<<") and new coordinate ("<<potentialPosition.x+1<<", "<<potentialPosition.y+1<<")"<<std::endl;
 			}
 
 			if (map[potentialPosition] == gWallChar) break;
