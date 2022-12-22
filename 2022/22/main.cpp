@@ -22,9 +22,9 @@ const int gColumnMultiplier = 4;
 
 const Coordinate gDirections[] {
 		{1, 0},  // Right
-		{0, 1}, // Down
+		{0, 1},  // Down
 		{-1, 0}, // Left
-		{0, -1}   // Up
+		{0, -1}  // Up
 };
 
 const std::string gDirectionStr[] {
