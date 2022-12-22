@@ -271,9 +271,6 @@ int main() {
 				}
 
 				potentialPosition = GetCubeOrigin(nextCubeIdx) + cubeOffset;
-				std::cout<<"Potentially passing from cube "<<cubeIdx<<" to cube "<<nextCubeIdx<<std::endl;
-				std::cout<<"with old coordinate ("<<currentPosition.x+1<<", "<<currentPosition.y+1;
-				std::cout<<") and new coordinate ("<<potentialPosition.x+1<<", "<<potentialPosition.y+1<<")"<<std::endl;
 			}
 
 			if (map[potentialPosition] == gWallChar) break;
