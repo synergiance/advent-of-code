@@ -26,10 +26,10 @@ namespace Syn {
 		Tokenize(input, tokens, delimeter);
 	}
 
-	size_t Parser::GetNumberLength(const std::string &input) {
-		for (size_t i = 0; i < input.size(); i++)
-			if (!std::isdigit(input[i])) return i;
-		return input.size();
+	size_t Parser::GetNumberLength(const std::string &input, size_t offset) {
+		for (size_t i = offset; i < input.size(); i++)
+			if (!std::isdigit(input[i])) return i - offset;
+		return input.size() - offset;
 	}
 
 	int Parser::GetNumFromStr(const char* str, size_t len) {
