@@ -154,7 +154,7 @@ int main() {
 
 	for (int i = 0; i < ProgressPoint; i++) {
 		CalcProposals(elfData, proposeOffset);
-		PrintElfData(elfData);
+		//PrintElfData(elfData);
 
 		proposeOffset++;
 		proposeOffset %= 4;
@@ -165,7 +165,7 @@ int main() {
 	elfData.elfProposals.clear();
 	elfData.contestedProposals.clear();
 	elfData.proposals.clear();
-	PrintElfData(elfData);
+	//PrintElfData(elfData);
 
 	Coordinate dimensions = elfData.upperBound - elfData.lowerBound + Coordinate{1, 1};
 	int totalTiles = dimensions.x * dimensions.y;
