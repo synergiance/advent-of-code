@@ -11,6 +11,8 @@
 using namespace Syn;
 
 struct ElfData {
+	int elvesWantingToMove;
+	int proposeOffset;
 	Coordinate lowerBound;
 	Coordinate upperBound;
 	std::unordered_set<Coordinate> elfLocations;
@@ -77,10 +79,12 @@ void CalcProposals(ElfData &elfData, int proposeOffset) {
 	elfData.elfProposals.clear();
 	elfData.proposals.clear();
 	elfData.contestedProposals.clear();
+	elfData.elvesWantingToMove = 0;
 
 	for (Coordinate elfLocation : elfData.elfLocations) {
 		Coordinate elfProposal = GetProposal(elfLocation, proposeOffset, elfData.elfLocations);
 		elfData.elfProposals.insert({elfLocation, elfProposal});
+		if (elfProposal != elfLocation) elfData.elvesWantingToMove++;
 
 		if (elfData.proposals.contains(elfProposal)) {
 			elfData.contestedProposals.insert(elfProposal);
@@ -118,6 +122,17 @@ void PrintElfData(ElfData &elfData) {
 		}
 		std::cout<<std::endl;
 	}
+	std::cout<<"Wanting to move: "<<elfData.elvesWantingToMove<<std::endl;
+}
+
+void CommenceRound(ElfData &elfData) {
+	CalcProposals(elfData, elfData.proposeOffset);
+	PrintElfData(elfData);
+
+	elfData.proposeOffset++;
+	elfData.proposeOffset %= 4;
+
+	MoveElvesToProposals(elfData);
 }
 
 int main() {
@@ -130,7 +145,7 @@ int main() {
 	std::cout<<"File successfully opened!"<<std::endl;
 	std::string buffer;
 
-	ElfData elfData{{0, 0}, {-1, -1}};
+	ElfData elfData{1, 0, {0, 0}, {-1, -1}};
 
 	while (Reader::getline(iFile, buffer)) {
 		if (buffer.empty()) continue;
@@ -150,28 +165,27 @@ int main() {
 	std::cout<<"Loaded initial grid, dimensions: "<<elfData.upperBound.x+1<<"x"<<elfData.upperBound.y+1;
 	std::cout<<", Elves: "<<elfData.elfLocations.size()<<std::endl;
 
-	int proposeOffset = 0;
-
-	for (int i = 0; i < ProgressPoint; i++) {
-		CalcProposals(elfData, proposeOffset);
-		//PrintElfData(elfData);
-
-		proposeOffset++;
-		proposeOffset %= 4;
-
-		MoveElvesToProposals(elfData);
-	}
-
-	elfData.elfProposals.clear();
-	elfData.contestedProposals.clear();
-	elfData.proposals.clear();
-	//PrintElfData(elfData);
+	for (int i = 0; i < ProgressPoint; i++)
+		CommenceRound(elfData);
 
 	Coordinate dimensions = elfData.upperBound - elfData.lowerBound + Coordinate{1, 1};
 	int totalTiles = dimensions.x * dimensions.y;
 	int emptyTiles = totalTiles - (int)elfData.elfLocations.size();
 
-	std::cout<<"Empty tiles: "<<emptyTiles<<std::endl;
+	int roundCount = 0;
+
+	while (elfData.elvesWantingToMove > 0) {
+		CommenceRound(elfData);
+		roundCount++;
+	}
+
+	elfData.proposals.clear();
+	elfData.contestedProposals.clear();
+	elfData.elfProposals.clear();
+	PrintElfData(elfData);
+
+	std::cout<<"Empty tiles after "<<ProgressPoint<<" rounds: "<<emptyTiles<<std::endl;
+	std::cout<<"Number of rounds: "<<roundCount<<std::endl;
 
 	return 0;
 }
