@@ -127,7 +127,7 @@ void PrintElfData(ElfData &elfData) {
 
 void CommenceRound(ElfData &elfData) {
 	CalcProposals(elfData, elfData.proposeOffset);
-	PrintElfData(elfData);
+	//PrintElfData(elfData);
 
 	elfData.proposeOffset++;
 	elfData.proposeOffset %= 4;
@@ -172,7 +172,7 @@ int main() {
 	int totalTiles = dimensions.x * dimensions.y;
 	int emptyTiles = totalTiles - (int)elfData.elfLocations.size();
 
-	int roundCount = 0;
+	int roundCount = 10;
 
 	while (elfData.elvesWantingToMove > 0) {
 		CommenceRound(elfData);
@@ -182,9 +182,9 @@ int main() {
 	elfData.proposals.clear();
 	elfData.contestedProposals.clear();
 	elfData.elfProposals.clear();
-	PrintElfData(elfData);
+	//PrintElfData(elfData);
 
-	std::cout<<"Empty tiles after "<<ProgressPoint<<" rounds: "<<emptyTiles<<std::endl;
+	std::cout<<std::endl<<"Empty tiles after "<<ProgressPoint<<" rounds: "<<emptyTiles<<std::endl;
 	std::cout<<"Number of rounds: "<<roundCount<<std::endl;
 
 	return 0;
