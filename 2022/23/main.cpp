@@ -8,7 +8,7 @@
 using namespace Syn;
 
 int main() {
-	std::ifstream iFile("input.dat");
+	std::ifstream iFile("initial_elf_positions.dat");
 	if (!iFile.is_open()) {
 		std::cout<<"Could not open file!"<<std::endl;
 		return 1;
