@@ -5,7 +5,7 @@
 #pragma once
 
 #include <Coordinate.h>
-#include <map>
+#include <unordered_map>
 
 namespace Syn {
 
@@ -48,7 +48,7 @@ namespace Syn {
 		const static int msChunkDimension = 0x10;
 		Coordinate mUpperLeft{};
 		Coordinate mLowerRight{};
-		std::map<Coordinate, T> mData;
+		std::unordered_map<Coordinate, T> mData;
 		T mFill;
 
 		void ExpandBoundary(Coordinate &location);
