@@ -42,10 +42,10 @@ namespace Syn {
 		[[nodiscard]] Coordinate GetLowerRight() const;
 
 		void Fill(T fill);
+		void Fill(T fill, Coordinate &upperLeft, Coordinate &lowerRight);
 		void DrawLine(Coordinate start, Coordinate finish, T fill);
 		bool WasTouched(Coordinate &location);
 	private:
-		const static int msChunkDimension = 0x10;
 		Coordinate mUpperLeft{};
 		Coordinate mLowerRight{};
 		std::unordered_map<Coordinate, T> mData;
@@ -87,6 +87,14 @@ namespace Syn {
 		mFill = fill;
 		mUpperLeft = {0,0};
 		mLowerRight = {0,0};
+	}
+
+	template<typename T>
+	void UnboundedGrid<T>::Fill(T fill, Coordinate &upperLeft, Coordinate &lowerRight) {
+		Coordinate pos{};
+		for (pos.x = upperLeft.x; pos.x <= lowerRight.x; pos.x++)
+			for (pos.y = upperLeft.y; pos.y <= lowerRight.y; pos.y++)
+				GetCellInternal(pos) = fill;
 	}
 
 	template<typename T>
