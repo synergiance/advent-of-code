@@ -10,8 +10,21 @@
 
 using namespace Syn;
 
+struct ElfData {
+	Coordinate lowerBound;
+	Coordinate upperBound;
+	std::unordered_set<Coordinate> elfLocations;
+	std::unordered_map<Coordinate, Coordinate> elfProposals;
+	std::unordered_set<Coordinate> proposals;
+	std::unordered_set<Coordinate> contestedProposals;
+};
+
 const int ProgressPoint = 10;
 const char HasElfChar = '#';
+const char EmptyGroundChar = '.';
+const char ProposedMoveChar = 'p';
+const char ConflictedProposalChar = 'c';
+const int ExpandPrintAreaBy = 2;
 
 const Coordinate ProposeOrder[] {
 		{0, -1}, // North
@@ -20,7 +33,29 @@ const Coordinate ProposeOrder[] {
 		{1, 0}   // East
 };
 
+const Coordinate CheckedCoordinates[] {
+		{-1, -1},
+		{-1, 0},
+		{-1, 1},
+		{0, 1},
+		{1, 1},
+		{1, 0},
+		{1, -1},
+		{0, -1}
+};
+
 Coordinate GetProposal(Coordinate elfLocation, int proposeOffset, const std::unordered_set<Coordinate> &elfLocations) {
+	bool wantsToMove = false;
+
+	for (const Coordinate &checkedCoordinate : CheckedCoordinates) {
+		if (elfLocations.contains(checkedCoordinate)) {
+			wantsToMove = true;
+			break;
+		}
+	}
+
+	if (!wantsToMove) return elfLocation;
+
 	for (int i = 0; i < 4; i++) {
 		int proposeIdx = (proposeOffset + i) % 4;
 		Coordinate proposeLocation = elfLocation + ProposeOrder[proposeIdx];
@@ -38,6 +73,53 @@ Coordinate GetProposal(Coordinate elfLocation, int proposeOffset, const std::uno
 	return elfLocation;
 }
 
+void CalcProposals(ElfData &elfData, int proposeOffset) {
+	elfData.elfProposals.clear();
+	elfData.proposals.clear();
+	elfData.contestedProposals.clear();
+
+	for (Coordinate elfLocation : elfData.elfLocations) {
+		Coordinate elfProposal = GetProposal(elfLocation, proposeOffset, elfData.elfLocations);
+		elfData.elfProposals.insert({elfLocation, elfProposal});
+
+		if (elfData.proposals.contains(elfProposal)) {
+			elfData.contestedProposals.insert(elfProposal);
+		} else {
+			elfData.proposals.insert(elfProposal);
+		}
+	}
+}
+
+void MoveElvesToProposals(ElfData &elfData) {
+	elfData.elfLocations.clear();
+	elfData.lowerBound = {0xFFFF, 0xFFFF};
+	elfData.upperBound = {-0xFFFF, -0xFFFF};
+
+	for (const auto &[elfLocation, elfProposal] : elfData.elfProposals) {
+		auto newLocation = elfData.contestedProposals.contains(elfProposal) ? elfLocation : elfProposal;
+		elfData.elfLocations.insert(newLocation);
+		if (newLocation.x < elfData.lowerBound.x) elfData.lowerBound.x = newLocation.x;
+		if (newLocation.y < elfData.lowerBound.y) elfData.lowerBound.y = newLocation.y;
+		if (newLocation.x > elfData.upperBound.x) elfData.upperBound.x = newLocation.x;
+		if (newLocation.y > elfData.upperBound.y) elfData.upperBound.y = newLocation.y;
+	}
+}
+
+void PrintElfData(ElfData &elfData) {
+	Coordinate pos{};
+	std::cout<<std::endl;
+	for (pos.x = elfData.lowerBound.x - ExpandPrintAreaBy; pos.x <= elfData.upperBound.x + ExpandPrintAreaBy; pos.x++) {
+		for (pos.y = elfData.lowerBound.y - ExpandPrintAreaBy; pos.y <= elfData.upperBound.y + ExpandPrintAreaBy; pos.y++) {
+			char ch = EmptyGroundChar;
+			if (elfData.proposals.contains(pos)) ch = ProposedMoveChar;
+			if (elfData.contestedProposals.contains(pos)) ch = ConflictedProposalChar;
+			if (elfData.elfLocations.contains(pos)) ch = HasElfChar;
+			std::cout<<ch;
+		}
+		std::cout<<std::endl;
+	}
+}
+
 int main() {
 	std::ifstream iFile("initial_elf_positions.dat");
 	if (!iFile.is_open()) {
@@ -48,70 +130,46 @@ int main() {
 	std::cout<<"File successfully opened!"<<std::endl;
 	std::string buffer;
 
-	Coordinate lowerBound = {0, 0};
-	Coordinate upperBound = {-1, -1};
-	std::unordered_set<Coordinate> elfLocations;
+	ElfData elfData{{0, 0}, {-1, -1}};
 
 	while (Reader::getline(iFile, buffer)) {
 		if (buffer.empty()) continue;
 
 		int t = (int)buffer.size() - 1;
-		if (t > upperBound.x)
-			upperBound.x = t;
-		upperBound.y++;
+		if (t > elfData.upperBound.x)
+			elfData.upperBound.x = t;
+		elfData.upperBound.y++;
 
 		for (int x = 0; x < buffer.size(); x++) {
 			if (buffer[x] != HasElfChar) continue;
-			elfLocations.insert({x, upperBound.y});
+			elfData.elfLocations.insert({x, elfData.upperBound.y});
 		}
 	}
 
 	iFile.close();
-	std::cout<<"Loaded initial grid, dimensions: "<<upperBound.x+1<<"x"<<upperBound.y+1;
-	std::cout<<", Elves: "<<elfLocations.size()<<std::endl;
-
-	std::unordered_map<Coordinate, Coordinate> elfProposals;
-	std::unordered_set<Coordinate> proposals;
-	std::unordered_set<Coordinate> contestedProposals;
+	std::cout<<"Loaded initial grid, dimensions: "<<elfData.upperBound.x+1<<"x"<<elfData.upperBound.y+1;
+	std::cout<<", Elves: "<<elfData.elfLocations.size()<<std::endl;
 
 	int proposeOffset = 0;
 
 	for (int i = 0; i < ProgressPoint; i++) {
-		elfProposals.clear();
-		proposals.clear();
-		contestedProposals.clear();
-
-		for (Coordinate elfLocation : elfLocations) {
-			Coordinate elfProposal = GetProposal(elfLocation, proposeOffset, elfLocations);
-			elfProposals.insert({elfLocation, elfProposal});
-
-			if (proposals.contains(elfProposal)) {
-				contestedProposals.insert(elfProposal);
-			} else {
-				proposals.insert(elfProposal);
-			}
-		}
+		CalcProposals(elfData, proposeOffset);
+		PrintElfData(elfData);
 
 		proposeOffset++;
 		proposeOffset %= 4;
 
-		elfLocations.clear();
-		lowerBound = {0xFFFF, 0xFFFF};
-		upperBound = {-0xFFFF, -0xFFFF};
-
-		for (const auto &[elfLocation, elfProposal] : elfProposals) {
-			auto newLocation = contestedProposals.contains(elfProposal) ? elfLocation : elfProposal;
-			elfLocations.insert(newLocation);
-			if (newLocation.x < lowerBound.x) lowerBound.x = newLocation.x;
-			if (newLocation.y < lowerBound.y) lowerBound.y = newLocation.y;
-			if (newLocation.x > upperBound.x) upperBound.x = newLocation.x;
-			if (newLocation.y > upperBound.y) upperBound.y = newLocation.y;
-		}
+		MoveElvesToProposals(elfData);
 	}
 
-	Coordinate dimensions = upperBound - lowerBound + Coordinate{1, 1};
+	elfData.elfProposals.clear();
+	elfData.contestedProposals.clear();
+	elfData.proposals.clear();
+	PrintElfData(elfData);
+
+	Coordinate dimensions = elfData.upperBound - elfData.lowerBound + Coordinate{1, 1};
 	int totalTiles = dimensions.x * dimensions.y;
-	int emptyTiles = totalTiles - (int)elfLocations.size();
+	int emptyTiles = totalTiles - (int)elfData.elfLocations.size();
 
 	std::cout<<"Empty tiles: "<<emptyTiles<<std::endl;
 
