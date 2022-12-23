@@ -108,8 +108,8 @@ void MoveElvesToProposals(ElfData &elfData) {
 void PrintElfData(ElfData &elfData) {
 	Coordinate pos{};
 	std::cout<<std::endl;
-	for (pos.x = elfData.lowerBound.x - ExpandPrintAreaBy; pos.x <= elfData.upperBound.x + ExpandPrintAreaBy; pos.x++) {
-		for (pos.y = elfData.lowerBound.y - ExpandPrintAreaBy; pos.y <= elfData.upperBound.y + ExpandPrintAreaBy; pos.y++) {
+	for (pos.y = elfData.lowerBound.y - ExpandPrintAreaBy; pos.y <= elfData.upperBound.y + ExpandPrintAreaBy; pos.y++) {
+		for (pos.x = elfData.lowerBound.x - ExpandPrintAreaBy; pos.x <= elfData.upperBound.x + ExpandPrintAreaBy; pos.x++) {
 			char ch = EmptyGroundChar;
 			if (elfData.proposals.contains(pos)) ch = ProposedMoveChar;
 			if (elfData.contestedProposals.contains(pos)) ch = ConflictedProposalChar;
