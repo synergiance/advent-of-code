@@ -48,7 +48,7 @@ Coordinate GetProposal(Coordinate elfLocation, int proposeOffset, const std::uno
 	bool wantsToMove = false;
 
 	for (const Coordinate &checkedCoordinate : CheckedCoordinates) {
-		if (elfLocations.contains(checkedCoordinate)) {
+		if (elfLocations.contains(elfLocation + checkedCoordinate)) {
 			wantsToMove = true;
 			break;
 		}
