@@ -127,6 +127,45 @@ void PrintMaps(Grid<char> &valleyLayout, Grid<char> &stormOverlay, Grid<char> &p
 	}
 }
 
+int FindFastestPath(
+		std::unordered_set<Coordinate> &possiblePositions,
+		std::unordered_set<Coordinate> &nextPossibilities,
+		Grid<char> &valleyLayout,
+		Grid<char> &stormOverlay,
+		std::vector<Blizzard> &blizzards,
+		const Coordinate &startingPos,
+		const Coordinate &finalPos) {
+	nextPossibilities.clear();
+	nextPossibilities.insert(startingPos);
+	int timePassed = 0;
+
+	do {
+		possiblePositions = nextPossibilities;
+		nextPossibilities.clear();
+		SimulateWeather(blizzards, stormOverlay, valleyLayout);
+
+		for (Coordinate position : possiblePositions) {
+			for (Coordinate movement : PossibleMovements) {
+				Coordinate potentialCoordinate = movement + position;
+				if (potentialCoordinate.y < 0 || potentialCoordinate.y >= valleyLayout.GetHeight()) continue;
+
+				if (valleyLayout[potentialCoordinate] == ValleyWallChar) continue;
+				if (stormOverlay[potentialCoordinate] != '\0') continue;
+
+				nextPossibilities.insert(potentialCoordinate);
+			}
+		}
+
+		timePassed++;
+		//DrawPossibilityOverlay(nextPossibilities, possibilityOverlay);
+		//PrintMaps(valleyLayout, stormOverlay, possibilityOverlay);
+		//std::cout<<"Possibilities found: "<<nextPossibilities.size()<<std::endl;
+		if (nextPossibilities.contains(finalPos)) break;
+	} while (!nextPossibilities.empty());
+
+	return timePassed;
+}
+
 int main() {
 	std::ifstream iFile("blizzard_map.dat");
 	if (!iFile.is_open()) {
@@ -178,6 +217,8 @@ int main() {
 			valleyLayout.GetHeight() - 1
 	};
 
+	Coordinate startingPos = {1, 0};
+
 	std::unordered_set<Coordinate> possiblePositions;
 	std::unordered_set<Coordinate> nextPossibilities;
 
@@ -185,32 +226,11 @@ int main() {
 
 	buffer.clear();
 
-	nextPossibilities.insert({1, 0});
 	int timePassed = 0;
 
-	do {
-		possiblePositions = nextPossibilities;
-		nextPossibilities.clear();
-		SimulateWeather(blizzards, stormOverlay, valleyLayout);
-
-		for (Coordinate position : possiblePositions) {
-			for (Coordinate movement : PossibleMovements) {
-				Coordinate potentialCoordinate = movement + position;
-				if (potentialCoordinate.y < 0 || potentialCoordinate.y >= valleyLayout.GetHeight()) continue;
-
-				if (valleyLayout[potentialCoordinate] == ValleyWallChar) continue;
-				if (stormOverlay[potentialCoordinate] != '\0') continue;
-
-				nextPossibilities.insert(potentialCoordinate);
-			}
-		}
-
-		timePassed++;
-		DrawPossibilityOverlay(nextPossibilities, possibilityOverlay);
-		PrintMaps(valleyLayout, stormOverlay, possibilityOverlay);
-		std::cout<<"Possibilities found: "<<nextPossibilities.size()<<std::endl;
-		if (nextPossibilities.contains(finalPos)) break;
-	} while (!nextPossibilities.empty());
+	timePassed += FindFastestPath(possiblePositions, nextPossibilities, valleyLayout, stormOverlay, blizzards, startingPos, finalPos);
+	timePassed += FindFastestPath(possiblePositions, nextPossibilities, valleyLayout, stormOverlay, blizzards, finalPos, startingPos);
+	timePassed += FindFastestPath(possiblePositions, nextPossibilities, valleyLayout, stormOverlay, blizzards, startingPos, finalPos);
 
 	std::cout<<"Lowest amount of time in valley: "<<timePassed<<std::endl;
 
