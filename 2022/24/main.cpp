@@ -4,11 +4,12 @@
 #include <vector>
 #include <Parser.h>
 #include <Reader.h>
+#include <Grid.h>
 
 using namespace Syn;
 
 int main() {
-	std::ifstream iFile("input.dat");
+	std::ifstream iFile("blizzard_map.dat");
 	if (!iFile.is_open()) {
 		std::cout<<"Could not open file!"<<std::endl;
 		return 1;
