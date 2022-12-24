@@ -9,7 +9,7 @@
 
 using namespace Syn;
 
-Coordinate3D Directions[] {
+Coordinate3D StormHeadings[] {
 		{ 1,  0,  0},
 		{-1,  0,  0},
 		{ 0,  1,  0},
@@ -80,7 +80,7 @@ int main() {
 		Coordinate3D currentCoordinate = searchQueue.front();
 		searchQueue.erase(searchQueue.cbegin());
 
-		for (Coordinate3D direction : Directions) {
+		for (Coordinate3D direction : StormHeadings) {
 			Coordinate3D potentialCoordinate = currentCoordinate + direction;
 
 			if (!CheckBounds(potentialCoordinate, lows, highs)) continue;
@@ -94,7 +94,7 @@ int main() {
 
 	int exposedFaces = 0;
 	for (Coordinate3D coordinate : droplets)
-		for (auto Direction : Directions)
+		for (auto Direction : StormHeadings)
 			if (exposedAir.contains(coordinate + Direction))
 				exposedFaces++;
 
