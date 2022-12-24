@@ -132,6 +132,7 @@ int FindFastestPath(
 		std::unordered_set<Coordinate> &nextPossibilities,
 		Grid<char> &valleyLayout,
 		Grid<char> &stormOverlay,
+		Grid<char> &possibilityOverlay,
 		std::vector<Blizzard> &blizzards,
 		const Coordinate &startingPos,
 		const Coordinate &finalPos) {
@@ -157,9 +158,9 @@ int FindFastestPath(
 		}
 
 		timePassed++;
-		//DrawPossibilityOverlay(nextPossibilities, possibilityOverlay);
-		//PrintMaps(valleyLayout, stormOverlay, possibilityOverlay);
-		//std::cout<<"Possibilities found: "<<nextPossibilities.size()<<std::endl;
+		DrawPossibilityOverlay(nextPossibilities, possibilityOverlay);
+		PrintMaps(valleyLayout, stormOverlay, possibilityOverlay);
+		std::cout<<"Possibilities found: "<<nextPossibilities.size()<<std::endl;
 		if (nextPossibilities.contains(finalPos)) break;
 	} while (!nextPossibilities.empty());
 
@@ -228,9 +229,9 @@ int main() {
 
 	int timePassed = 0;
 
-	timePassed += FindFastestPath(possiblePositions, nextPossibilities, valleyLayout, stormOverlay, blizzards, startingPos, finalPos);
-	timePassed += FindFastestPath(possiblePositions, nextPossibilities, valleyLayout, stormOverlay, blizzards, finalPos, startingPos);
-	timePassed += FindFastestPath(possiblePositions, nextPossibilities, valleyLayout, stormOverlay, blizzards, startingPos, finalPos);
+	timePassed += FindFastestPath(possiblePositions, nextPossibilities, valleyLayout, stormOverlay, possibilityOverlay, blizzards, startingPos, finalPos);
+	timePassed += FindFastestPath(possiblePositions, nextPossibilities, valleyLayout, stormOverlay, possibilityOverlay, blizzards, finalPos, startingPos);
+	timePassed += FindFastestPath(possiblePositions, nextPossibilities, valleyLayout, stormOverlay, possibilityOverlay, blizzards, startingPos, finalPos);
 
 	std::cout<<"Lowest amount of time in valley: "<<timePassed<<std::endl;
 
