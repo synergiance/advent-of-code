@@ -158,9 +158,9 @@ int FindFastestPath(
 		}
 
 		timePassed++;
-		DrawPossibilityOverlay(nextPossibilities, possibilityOverlay);
-		PrintMaps(valleyLayout, stormOverlay, possibilityOverlay);
-		std::cout<<"Possibilities found: "<<nextPossibilities.size()<<std::endl;
+		//DrawPossibilityOverlay(nextPossibilities, possibilityOverlay);
+		//PrintMaps(valleyLayout, stormOverlay, possibilityOverlay);
+		//std::cout<<"Possibilities found: "<<nextPossibilities.size()<<std::endl;
 		if (nextPossibilities.contains(finalPos)) break;
 	} while (!nextPossibilities.empty());
 
