@@ -96,6 +96,8 @@ void SimulateStorm(Blizzard &blizzard, Grid<char> &valleyLayout) {
 	do {
 		blizzard.location += StormHeadings[blizzard.direction];
 		blizzard.location %= {valleyLayout.GetWidth(), valleyLayout.GetHeight()};
+		if (blizzard.location.x < 0) blizzard.location.x += valleyLayout.GetWidth();
+		if (blizzard.location.y < 0) blizzard.location.y += valleyLayout.GetHeight();
 	} while (valleyLayout[blizzard.location] == ValleyWallChar);
 }
 
