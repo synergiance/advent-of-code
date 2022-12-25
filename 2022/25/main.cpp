@@ -51,16 +51,15 @@ int main() {
 	std::cout<<"File successfully opened!"<<std::endl;
 	std::string buffer;
 
-	// TODO: Set up
+	long fuelRequirement = 0;
 
 	while (Reader::getline(iFile, buffer)) {
 		if (buffer.empty()) continue;
 
-		long n = DecodeSNAFU(buffer);
-		std::cout<<"Converting SNAFU to decimal to SNAFU: "<<buffer<<" --> "<<n<<" --> "<<EncodeSNAFU(n)<<std::endl;
+		fuelRequirement += DecodeSNAFU(buffer);
 	}
 
-	// TODO: Output
+	std::cout<<"Fuel requirement: "<<EncodeSNAFU(fuelRequirement)<<std::endl;
 
 	iFile.close();
 	return 0;
