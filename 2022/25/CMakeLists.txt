@@ -1,4 +1,4 @@
-add_executable(2022-25-unknown main.cpp)
+add_executable(2022-25-full_of_hot_air main.cpp)
 
-target_link_libraries(2022-25-unknown PRIVATE Parser)
-target_link_libraries(2022-25-unknown PRIVATE Reader)
+target_link_libraries(2022-25-full_of_hot_air PRIVATE Parser)
+target_link_libraries(2022-25-full_of_hot_air PRIVATE Reader)
