@@ -4,33 +4,114 @@
 #include <vector>
 #include <Parser.h>
 #include <Reader.h>
-#include <map>
+#include <unordered_map>
+#include <unordered_set>
 
 using namespace Syn;
 
+enum Action { open, move };
+
+struct ActionLog {
+	Action action;
+	std::string valve;
+
+	friend std::ostream &operator<<(std::ostream &out, const ActionLog &actionLog) {
+		out<<((actionLog.action == open) ? "Opened " : "Moved to ")<<actionLog.valve;
+		return out;
+	}
+};
+
 struct BoardState {
-	std::string previousRoom;
-	int maxReleaseRate;
-	int maxReleased;
-	int maxPotential;
-	int worstTime;
-	std::map<std::string, bool> roomStates;
+	int timeLeft;
+	int currentFlowRate;
+	int pressureReleased;
+	std::string currentLocation;
+	std::unordered_set<std::string> openValves;
+	std::vector<ActionLog> actionLog;
+
+	void PrintValves() const {
+		if (openValves.empty()) {
+			std::cout<<"No open valves!"<<std::endl;
+			return;
+		}
+
+		bool first = true;
+		std::cout<<"Open valves: ";
+		for (const std::string &valve : openValves) {
+			if (first) {
+				std::cout<<valve;
+				first = false;
+			} else {
+				std::cout<<", "<<valve;
+			}
+		}
+
+		std::cout<<std::endl;
+	}
+
+	void PrintLog() const {
+		if (actionLog.empty()) {
+			std::cout<<"No actions!"<<std::endl;
+			return;
+		}
+
+		bool first = true;
+		std::cout<<"Action Log: ";
+		for (const ActionLog &log : actionLog) {
+			if (first) {
+				std::cout<<log;
+				first = false;
+			} else {
+				std::cout << ", " << log;
+			}
+		}
+		std::cout<<std::endl;
+	}
 };
 
 struct ValveRoom {
 	std::string name;
 	int flowRate;
 	std::vector<std::string> connected;
-	BoardState bestState;
 };
 
-struct Connection {
-	int distance;
-	std::string other;
+struct SeenState {
+	std::unordered_set<std::string> openedValves;
+	std::string currentValve;
+	int ventedPressure;
+	int timeLeft;
+
+	bool operator==(const SeenState &other) const {
+		if (timeLeft != other.timeLeft) return false;
+		if (ventedPressure != other.ventedPressure) return false;
+		if (currentValve != other.currentValve) return false;
+		for (const std::string &valve : openedValves)
+			if (!other.openedValves.contains(valve)) return false;
+		for (const std::string &valve : other.openedValves)
+			if (!openedValves.contains(valve)) return false;
+		return true;
+	}
 };
 
-const int gTotalTime = 30;
+namespace std {
+	template<> struct hash<SeenState> {
+		size_t operator()(const SeenState &seenState) const noexcept {
+			size_t hash = std::hash<int>{}(seenState.timeLeft) << 3;
+			hash ^= std::hash<int>{}(seenState.ventedPressure) << 2;
+			hash ^= std::hash<std::string>{}(seenState.currentValve) << 1;
+			for (const std::string &valve : seenState.openedValves)
+				hash ^= std::hash<std::string>{}(valve);
+			return hash;
+		}
+	};
+}
+
 const std::string gStartingRoom = "AA";
+const int gTotalTime = 30;
+
+int gBestFound = -1;
+
+std::unordered_set<SeenState> gSeenStates;
 
 ValveRoom ParseRoom(const std::string &input) {
 	std::vector<std::string> tokens;
@@ -45,15 +126,62 @@ ValveRoom ParseRoom(const std::string &input) {
 		newRoom.connected.push_back(tokens[i]);
 	}
 
-	newRoom.bestState = {
-			"",
-			-1,
-			-1,
-			-1,
-			gTotalTime
+	return newRoom;
+}
+
+void Simulate(BoardState &boardState) {
+	boardState.timeLeft--;
+	boardState.pressureReleased += boardState.currentFlowRate;
+}
+
+BoardState FindBestFlow(const BoardState& currentBoardState, std::unordered_map<std::string, ValveRoom> &rooms) {
+	if (currentBoardState.timeLeft == 0) {
+		if (currentBoardState.pressureReleased > gBestFound) {
+			gBestFound = currentBoardState.pressureReleased;
+			std::cout<<"Found new candidate: "<<currentBoardState.pressureReleased<<std::endl;
+			currentBoardState.PrintValves();
+			currentBoardState.PrintLog();
+			std::cout<<std::endl;
+		}
+		return currentBoardState;
+	}
+
+	SeenState state{
+		currentBoardState.openValves,
+		currentBoardState.currentLocation,
+		currentBoardState.pressureReleased,
+		currentBoardState.timeLeft
 	};
 
-	return newRoom;
+	if (gSeenStates.contains(state)) return {0, -1, 0, gStartingRoom};
+	gSeenStates.insert(state);
+
+	ValveRoom &currentRoom = rooms[currentBoardState.currentLocation];
+	BoardState bestState{0, -1, 0, gStartingRoom};
+
+	if (currentRoom.flowRate > 0 && !currentBoardState.openValves.contains(currentBoardState.currentLocation)) {
+		bestState = currentBoardState;
+		Simulate(bestState);
+		bestState.openValves.insert(currentBoardState.currentLocation);
+		bestState.currentFlowRate += currentRoom.flowRate;
+		bestState.actionLog.push_back({open, currentBoardState.currentLocation});
+		bestState = FindBestFlow(bestState, rooms);
+	}
+
+	const std::vector<ActionLog> &currentActionLog = currentBoardState.actionLog;
+
+	for (const std::string &connectedRoom : currentRoom.connected) {
+		if (currentActionLog.size() >= 2 && currentActionLog[currentActionLog.size() - 2].valve == connectedRoom) continue;
+		BoardState testState = currentBoardState;
+		Simulate(testState);
+		testState.currentLocation = connectedRoom;
+		testState.actionLog.push_back({move, connectedRoom});
+		testState = FindBestFlow(testState, rooms);
+		if (testState.pressureReleased > bestState.pressureReleased)
+			bestState = testState;
+	}
+
+	return bestState;
 }
 
 int main() {
@@ -66,8 +194,7 @@ int main() {
 	std::cout<<"File successfully opened!"<<std::endl;
 	std::string buffer;
 
-	std::map<std::string, ValveRoom> rooms;
-	std::string currentRoom = gStartingRoom;
+	std::unordered_map<std::string, ValveRoom> rooms;
 
 	while (Reader::getline(iFile, buffer)) {
 		if (buffer.empty()) continue;
@@ -75,50 +202,18 @@ int main() {
 		ValveRoom room = ParseRoom(buffer);
 		rooms.insert({room.name, room});
 
-		std::cout<<"Imported room "<<room.name<<" with "<<room.connected.size()<<" connections"<<std::endl;
+		std::cout<<"Imported room "<<room.name<<" with "<<room.connected.size();
+		std::cout<<" connections and a flow rate of "<<room.flowRate<<std::endl;
 	}
 
-	std::vector<std::string> roomsToCheck;
-	roomsToCheck.push_back(gStartingRoom);
-	BoardState &firstState = rooms[gStartingRoom].bestState;
-	firstState.maxReleaseRate = rooms[gStartingRoom].flowRate;
-	firstState.worstTime = rooms[gStartingRoom].flowRate > 0 ? 2 : 1;
-	firstState.maxReleased = 0;
-	firstState.maxPotential = firstState.maxReleaseRate * (gTotalTime - firstState.worstTime);
+	BoardState bestFlow = FindBestFlow({
+		gTotalTime,
+		0,
+		0,
+		gStartingRoom
+		}, rooms);
 
-	while (!roomsToCheck.empty()) {
-		std::cout<<std::endl<<"Checking room "<<roomsToCheck[0]<<std::endl;
-		for (const std::string& roomId : rooms[roomsToCheck[0]].connected) {
-			std::cout<<"Looking at connected room "<<roomId<<std::endl;
-			BoardState potentialState = rooms[roomsToCheck[0]].bestState;
-			int flowRate = rooms[roomId].flowRate;
-			potentialState.previousRoom = roomId;
-			potentialState.worstTime++;
-			potentialState.maxReleased += potentialState.maxReleaseRate;
-
-			if (flowRate != 0) {
-				potentialState.maxReleaseRate += flowRate;
-				potentialState.worstTime++;
-				potentialState.maxPotential = potentialState.maxReleaseRate * (gTotalTime - potentialState.worstTime);
-			}
-
-			std::cout<<"Potential state: Worst time: "<<potentialState.worstTime<<", Max Potential: "<<potentialState.maxPotential;
-			std::cout<<", Max rate: "<<potentialState.maxReleaseRate<<", Max released: "<<potentialState.maxReleased<<std::endl;
-
-			if (potentialState.maxPotential > rooms[roomId].bestState.maxPotential) {
-				std::cout<<"Replacing state of "<<roomId<<" with better state ("<<potentialState.maxPotential;
-				std::cout<<" > "<<rooms[roomId].bestState.maxPotential<<")"<<std::endl;
-				rooms[roomId].bestState = potentialState;
-				roomsToCheck.push_back(roomId);
-			} else {
-				std::cout<<"Loop detected"<<std::endl;
-			}
-		}
-
-		roomsToCheck.erase(roomsToCheck.cbegin());
-	}
-
-	// TODO: Output
+	std::cout<<"Most pressure released: "<<bestFlow.pressureReleased<<std::endl;
 
 	iFile.close();
 	return 0;
