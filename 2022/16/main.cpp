@@ -146,15 +146,8 @@ BoardState FindBestFlow(const BoardState& currentBoardState, std::unordered_map<
 		return currentBoardState;
 	}
 
-	SeenState state{
-		currentBoardState.openValves,
-		currentBoardState.currentLocation,
-		currentBoardState.pressureReleased,
-		currentBoardState.timeLeft
-	};
-
-	if (gSeenStates.contains(state)) return {0, -1, 0, gStartingRoom};
-	gSeenStates.insert(state);
+	if (currentBoardState.currentFlowRate < 20 && currentBoardState.timeLeft < 10)
+		return { 0, -1, -1, gStartingRoom };
 
 	ValveRoom &currentRoom = rooms[currentBoardState.currentLocation];
 	BoardState bestState{0, -1, 0, gStartingRoom};
