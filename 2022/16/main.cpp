@@ -237,9 +237,8 @@ int main() {
 		std::cout<<" connections and a flow rate of "<<room.flowRate<<std::endl;
 	}
 
-	for (std::pair<const std::basic_string<char>, ValveRoom> pair : valves) {
+	for (std::pair<const std::basic_string<char>, ValveRoom> pair : valves)
 		pair.second.CalcValveTimes(valves);
-	}
 	std::cout<<"Calculated routes"<<std::endl;
 
 	BoardState bestFlow = FindBestFlow({
