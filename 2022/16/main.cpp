@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <queue>
 #include <Parser.h>
 #include <Reader.h>
 #include <unordered_map>
@@ -19,6 +20,16 @@ struct ActionLog {
 		out<<((actionLog.action == open) ? "Opened " : "Moved to ")<<actionLog.valve;
 		return out;
 	}
+};
+
+struct Valve {
+	std::string name;
+	int flowRate;
+	std::vector<std::string> connected;
+	std::unordered_map<std::string,int> valveTimes;
+
+	void CalcValveTimes(std::unordered_map<std::string, Valve> &valves);
+	static Valve Parse(const std::string &input);
 };
 
 struct BoardState {
@@ -127,6 +138,52 @@ ValveRoom ParseRoom(const std::string &input) {
 	}
 
 	return newRoom;
+}
+
+Valve Valve::Parse(const std::string &input) {
+	std::vector<std::string> tokens;
+	Parser::Tokenize(input, tokens);
+
+	if (tokens.size() < 10)
+		return Valve{"", 0};
+
+	Valve newValve {
+			tokens[1],
+			Parser::GetNumFromStr(tokens[4].c_str(), tokens[4].size())
+	};
+
+	for (int i = 9; i < tokens.size(); i++) {
+		Parser::Trim(tokens[i], ',');
+		newValve.connected.push_back(tokens[i]);
+	}
+
+	return newValve;
+}
+
+void Valve::CalcValveTimes(std::unordered_map<std::string, Valve> &valves) {
+	// BFS search for all non-zero valves
+	std::queue<std::string> valvesToSearch;
+	std::unordered_map<std::string, int> allValveTimes;
+	valvesToSearch.push(name);
+	allValveTimes.insert({name, 1});
+
+	while (!valvesToSearch.empty()) {
+		std::string &valveName = valvesToSearch.front();
+		int time = allValveTimes[valveName] + 1;
+		if (time > gTotalTime) break;
+
+		for (const std::string &connectedValve : valves[valveName].connected) {
+			if (allValveTimes.contains(connectedValve)) continue;
+
+			if (valves[connectedValve].flowRate > 0)
+				valveTimes.insert({connectedValve, time});
+
+			valvesToSearch.push(connectedValve);
+			allValveTimes.insert({connectedValve, time});
+		}
+
+		valvesToSearch.pop();
+	}
 }
 
 void Simulate(BoardState &boardState) {
