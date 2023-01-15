@@ -22,14 +22,14 @@ struct ActionLog {
 	}
 };
 
-struct Valve {
+struct ValveRoom {
 	std::string name;
 	int flowRate;
 	std::vector<std::string> connected;
 	std::unordered_map<std::string,int> valveTimes;
 
-	void CalcValveTimes(std::unordered_map<std::string, Valve> &valves);
-	static Valve Parse(const std::string &input);
+	void CalcValveTimes(std::unordered_map<std::string, ValveRoom> &valves);
+	static ValveRoom Parse(const std::string &input);
 };
 
 struct BoardState {
@@ -80,12 +80,6 @@ struct BoardState {
 	}
 };
 
-struct ValveRoom {
-	std::string name;
-	int flowRate;
-	std::vector<std::string> connected;
-};
-
 struct SeenState {
 	std::unordered_set<std::string> openedValves;
 	std::string currentValve;
@@ -122,32 +116,14 @@ const int gTotalTime = 30;
 
 int gBestFound = -1;
 
-std::unordered_set<SeenState> gSeenStates;
-
-ValveRoom ParseRoom(const std::string &input) {
-	std::vector<std::string> tokens;
-	Parser::Tokenize(input, tokens);
-
-	if (tokens.size() < 10) return ValveRoom{"", 0};
-
-	ValveRoom newRoom{ tokens[1], Parser::GetNumFromStr(tokens[4].c_str(), tokens[4].size()) };
-
-	for (int i = 9; i < tokens.size(); i++) {
-		Parser::Trim(tokens[i], ',');
-		newRoom.connected.push_back(tokens[i]);
-	}
-
-	return newRoom;
-}
-
-Valve Valve::Parse(const std::string &input) {
+ValveRoom ValveRoom::Parse(const std::string &input) {
 	std::vector<std::string> tokens;
 	Parser::Tokenize(input, tokens);
 
 	if (tokens.size() < 10)
-		return Valve{"", 0};
+		return ValveRoom{"", 0};
 
-	Valve newValve {
+	ValveRoom newValve {
 			tokens[1],
 			Parser::GetNumFromStr(tokens[4].c_str(), tokens[4].size())
 	};
@@ -160,7 +136,7 @@ Valve Valve::Parse(const std::string &input) {
 	return newValve;
 }
 
-void Valve::CalcValveTimes(std::unordered_map<std::string, Valve> &valves) {
+void ValveRoom::CalcValveTimes(std::unordered_map<std::string, ValveRoom> &valves) {
 	// BFS search for all non-zero valves
 	std::queue<std::string> valvesToSearch;
 	std::unordered_map<std::string, int> allValveTimes;
@@ -245,21 +221,19 @@ int main() {
 	std::string buffer;
 
 	std::unordered_map<std::string, ValveRoom> rooms;
-	std::unordered_map<std::string, Valve> valves;
+	std::unordered_map<std::string, ValveRoom> valves;
 
 	while (Reader::getline(iFile, buffer)) {
 		if (buffer.empty()) continue;
 
-		ValveRoom room = ParseRoom(buffer);
-		Valve valve = Valve::Parse(buffer);
+		ValveRoom room = ValveRoom::Parse(buffer);
 		rooms.insert({room.name, room});
-		valves.insert({valve.name, valve});
 
 		std::cout<<"Imported room "<<room.name<<" with "<<room.connected.size();
 		std::cout<<" connections and a flow rate of "<<room.flowRate<<std::endl;
 	}
 
-	for (std::pair<const std::basic_string<char>, Valve> pair : valves) {
+	for (std::pair<const std::basic_string<char>, ValveRoom> pair : valves) {
 		pair.second.CalcValveTimes(valves);
 	}
 	std::cout<<"Calculated routes"<<std::endl;
