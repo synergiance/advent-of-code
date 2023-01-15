@@ -245,16 +245,24 @@ int main() {
 	std::string buffer;
 
 	std::unordered_map<std::string, ValveRoom> rooms;
+	std::unordered_map<std::string, Valve> valves;
 
 	while (Reader::getline(iFile, buffer)) {
 		if (buffer.empty()) continue;
 
 		ValveRoom room = ParseRoom(buffer);
+		Valve valve = Valve::Parse(buffer);
 		rooms.insert({room.name, room});
+		valves.insert({valve.name, valve});
 
 		std::cout<<"Imported room "<<room.name<<" with "<<room.connected.size();
 		std::cout<<" connections and a flow rate of "<<room.flowRate<<std::endl;
 	}
+
+	for (std::pair<const std::basic_string<char>, Valve> pair : valves) {
+		pair.second.CalcValveTimes(valves);
+	}
+	std::cout<<"Calculated routes"<<std::endl;
 
 	BoardState bestFlow = FindBestFlow({
 		gTotalTime,
