@@ -40,44 +40,9 @@ struct BoardState {
 	std::unordered_set<std::string> openValves;
 	std::vector<ActionLog> actionLog;
 
-	void PrintValves() const {
-		if (openValves.empty()) {
-			std::cout<<"No open valves!"<<std::endl;
-			return;
-		}
-
-		bool first = true;
-		std::cout<<"Open valves: ";
-		for (const std::string &valve : openValves) {
-			if (first) {
-				std::cout<<valve;
-				first = false;
-			} else {
-				std::cout<<", "<<valve;
-			}
-		}
-
-		std::cout<<std::endl;
-	}
-
-	void PrintLog() const {
-		if (actionLog.empty()) {
-			std::cout<<"No actions!"<<std::endl;
-			return;
-		}
-
-		bool first = true;
-		std::cout<<"Action Log: ";
-		for (const ActionLog &log : actionLog) {
-			if (first) {
-				std::cout<<log;
-				first = false;
-			} else {
-				std::cout << ", " << log;
-			}
-		}
-		std::cout<<std::endl;
-	}
+	void PrintValves() const;
+	void PrintLog() const;
+	void Simulate(int minutes = 1);
 };
 
 struct SeenState {
@@ -162,9 +127,48 @@ void ValveRoom::CalcValveTimes(std::unordered_map<std::string, ValveRoom> &valve
 	}
 }
 
-void Simulate(BoardState &boardState) {
-	boardState.timeLeft--;
-	boardState.pressureReleased += boardState.currentFlowRate;
+void BoardState::PrintValves() const {
+	if (openValves.empty()) {
+		std::cout<<"No open valves!"<<std::endl;
+		return;
+	}
+
+	bool first = true;
+	std::cout<<"Open valves: ";
+	for (const std::string &valve : openValves) {
+		if (first) {
+			std::cout<<valve;
+			first = false;
+		} else {
+			std::cout<<", "<<valve;
+		}
+	}
+
+	std::cout<<std::endl;
+}
+
+void BoardState::PrintLog() const {
+	if (actionLog.empty()) {
+		std::cout<<"No actions!"<<std::endl;
+		return;
+	}
+
+	bool first = true;
+	std::cout<<"Action Log: ";
+	for (const ActionLog &log : actionLog) {
+		if (first) {
+			std::cout<<log;
+			first = false;
+		} else {
+			std::cout << ", " << log;
+		}
+	}
+	std::cout<<std::endl;
+}
+
+void BoardState::Simulate(int minutes) {
+	timeLeft -= minutes;
+	pressureReleased += currentFlowRate * minutes;
 }
 
 BoardState FindBestFlow(const BoardState& currentBoardState, std::unordered_map<std::string, ValveRoom> &rooms) {
@@ -187,7 +191,7 @@ BoardState FindBestFlow(const BoardState& currentBoardState, std::unordered_map<
 
 	if (currentRoom.flowRate > 0 && !currentBoardState.openValves.contains(currentBoardState.currentLocation)) {
 		bestState = currentBoardState;
-		Simulate(bestState);
+		bestState.Simulate();
 		bestState.openValves.insert(currentBoardState.currentLocation);
 		bestState.currentFlowRate += currentRoom.flowRate;
 		bestState.actionLog.push_back({open, currentBoardState.currentLocation});
@@ -199,7 +203,7 @@ BoardState FindBestFlow(const BoardState& currentBoardState, std::unordered_map<
 	for (const std::string &connectedRoom : currentRoom.connected) {
 		if (currentActionLog.size() >= 2 && currentActionLog[currentActionLog.size() - 2].valve == connectedRoom) continue;
 		BoardState testState = currentBoardState;
-		Simulate(testState);
+		testState.Simulate();
 		testState.currentLocation = connectedRoom;
 		testState.actionLog.push_back({move, connectedRoom});
 		testState = FindBestFlow(testState, rooms);
