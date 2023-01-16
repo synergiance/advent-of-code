@@ -172,41 +172,34 @@ void BoardState::Simulate(int minutes) {
 }
 
 BoardState FindBestFlow(const BoardState& currentBoardState, std::unordered_map<std::string, ValveRoom> &rooms) {
-	if (currentBoardState.timeLeft == 0) {
-		if (currentBoardState.pressureReleased > gBestFound) {
-			gBestFound = currentBoardState.pressureReleased;
-			std::cout<<"Found new candidate: "<<currentBoardState.pressureReleased<<std::endl;
-			currentBoardState.PrintValves();
-			currentBoardState.PrintLog();
+	BoardState bestState = currentBoardState;
+	bestState.Simulate(bestState.timeLeft);
+
+	if (currentBoardState.timeLeft < 2) {
+		if (bestState.pressureReleased > gBestFound) {
+			gBestFound = bestState.pressureReleased;
+			std::cout<<"Found new candidate: "<<bestState.pressureReleased<<std::endl;
+			bestState.PrintValves();
+			bestState.PrintLog();
 			std::cout<<std::endl;
 		}
-		return currentBoardState;
+		return bestState;
 	}
 
-	if (currentBoardState.currentFlowRate < 20 && currentBoardState.timeLeft < 10)
-		return { 0, -1, -1, gStartingRoom };
+	auto &valveTimes = rooms[currentBoardState.currentLocation].valveTimes;
+	for (const std::pair<const std::basic_string<char>, int>& valveTime : valveTimes) {
+		if (valveTime.second > currentBoardState.timeLeft) continue;
+		if (currentBoardState.openValves.contains(valveTime.first)) continue;
 
-	ValveRoom &currentRoom = rooms[currentBoardState.currentLocation];
-	BoardState bestState{0, -1, 0, gStartingRoom};
-
-	if (currentRoom.flowRate > 0 && !currentBoardState.openValves.contains(currentBoardState.currentLocation)) {
-		bestState = currentBoardState;
-		bestState.Simulate();
-		bestState.openValves.insert(currentBoardState.currentLocation);
-		bestState.currentFlowRate += currentRoom.flowRate;
-		bestState.actionLog.push_back({open, currentBoardState.currentLocation});
-		bestState = FindBestFlow(bestState, rooms);
-	}
-
-	const std::vector<ActionLog> &currentActionLog = currentBoardState.actionLog;
-
-	for (const std::string &connectedRoom : currentRoom.connected) {
-		if (currentActionLog.size() >= 2 && currentActionLog[currentActionLog.size() - 2].valve == connectedRoom) continue;
 		BoardState testState = currentBoardState;
-		testState.Simulate();
-		testState.currentLocation = connectedRoom;
-		testState.actionLog.push_back({move, connectedRoom});
+		testState.Simulate(valveTime.second);
+		testState.currentLocation = valveTime.first;
+		testState.openValves.insert(valveTime.first);
+		testState.currentFlowRate += rooms[valveTime.first].flowRate;
+		testState.actionLog.push_back({move, valveTime.first});
+		testState.actionLog.push_back({open, valveTime.first});
 		testState = FindBestFlow(testState, rooms);
+
 		if (testState.pressureReleased > bestState.pressureReleased)
 			bestState = testState;
 	}
@@ -225,7 +218,6 @@ int main() {
 	std::string buffer;
 
 	std::unordered_map<std::string, ValveRoom> rooms;
-	std::unordered_map<std::string, ValveRoom> valves;
 
 	while (Reader::getline(iFile, buffer)) {
 		if (buffer.empty()) continue;
@@ -237,8 +229,8 @@ int main() {
 		std::cout<<" connections and a flow rate of "<<room.flowRate<<std::endl;
 	}
 
-	for (std::pair<const std::basic_string<char>, ValveRoom> pair : valves)
-		pair.second.CalcValveTimes(valves);
+	for (std::pair<const std::basic_string<char>, ValveRoom> &pair : rooms)
+		pair.second.CalcValveTimes(rooms);
 	std::cout<<"Calculated routes"<<std::endl;
 
 	BoardState bestFlow = FindBestFlow({
